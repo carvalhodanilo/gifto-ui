@@ -1,0 +1,167 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Tema do tenant: fallback até TenantTheme aplicar valores do mock/API */
+    /* Valores reais vêm de config/mock-tenant.ts (MVP) ou da API (futuro). */
+    --brand-primary: #0f172a;
+    --brand-secondary: #f1f5f9;
+    --brand-logo-url: none;
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Etiqueta de impressão térmica: oculta na tela, visível só ao imprimir */
+.voucher-print-root {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+@media print {
+  /* Uma página = uma etiqueta (50×30 mm). Use "Tamanho real" na impressora. */
+  @page {
+    size: 50mm 30mm;
+    margin: 0;
+  }
+  html,
+  body {
+    width: 50mm !important;
+    height: 30mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+  body * {
+    visibility: hidden;
+  }
+  #voucher-print-container,
+  #voucher-print-container .voucher-print-root,
+  #voucher-print-container .voucher-print-root * {
+    visibility: visible;
+  }
+  .voucher-print-root {
+    position: fixed;
+    page-break-after: always;
+    left: 0;
+    top: 0;
+    width: 50mm;
+    height: 30mm;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    box-sizing: border-box;
+  }
+  .voucher-print-label {
+    width: 50mm;
+    height: 30mm;
+    max-height: 30mm;
+    text-align: center;
+    color: #000;
+    font-family: system-ui, sans-serif;
+    font-size: 6px;
+    line-height: 1.15;
+    padding: 1mm;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .voucher-print-title {
+    font-size: 8px;
+    font-weight: 700;
+    margin: 0 0 0.3mm 0;
+    letter-spacing: 0.02em;
+    line-height: 1.1;
+  }
+  .voucher-print-subtitle {
+    font-size: 5px;
+    margin: 0 0 0.5mm 0;
+    color: #333;
+  }
+  .voucher-print-qr {
+    margin: 0.3mm auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .voucher-print-qr svg {
+    width: 14mm !important;
+    height: 14mm !important;
+  }
+  .voucher-print-code-label {
+    margin: 0.2mm 0 0 0;
+    font-size: 5px;
+    color: #555;
+  }
+  .voucher-print-code {
+    font-size: 7px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    margin: 0;
+  }
+  .voucher-print-line {
+    margin: 0.2mm 0 0 0;
+    font-size: 5px;
+  }
+}
