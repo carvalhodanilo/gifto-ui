@@ -1,5 +1,4 @@
 import { apiUrl } from '../config/api';
-import { withIdempotencyKey } from '../utils/idempotency';
 import type {
   LedgerEntriesResponse,
   LedgerEntriesParams,
@@ -7,6 +6,7 @@ import type {
   ReversalResult,
 } from '../types/ledger';
 import { authHeaders } from './authHeaders';
+import { withIdempotencyKey } from '../utils/idempotency';
 
 /**
  * Monta query string a partir dos params (search, page, perPage, sort, dir).
@@ -25,14 +25,16 @@ function buildQueryString(params: LedgerEntriesParams): string {
 }
 
 /**
- * GET /vouchers/ledger-entries
- * Headers: tenant, merchant. Query: search, page, perPage, sort, dir.
+ * GET /v1/vouchers/ledger-entries
+ * Query: search, page, perPage, sort, dir.
  */
 export async function getLedgerEntries(
   _tenantId: string,
   _merchantId: string,
   params: LedgerEntriesParams = {}
 ): Promise<LedgerEntriesResponse> {
+  void _tenantId;
+  void _merchantId;
   const url = apiUrl('v1/vouchers/ledger-entries') + buildQueryString(params);
   const res = await fetch(url, {
     headers: authHeaders(),
@@ -45,7 +47,7 @@ export async function getLedgerEntries(
 }
 
 /**
- * POST /vouchers/reversal
+ * POST /v1/vouchers/reversal
  * Idempotency-Key no header (obrigatório); mesmo valor em body.idempotencyKey.
  * refLedgerEntryId = ledgerEntryId do item selecionado no histórico.
  */
@@ -54,9 +56,7 @@ export async function postReversal(payload: ReversalPayload): Promise<ReversalRe
   const url = apiUrl('v1/vouchers/reversal');
   const res = await fetch(url, {
     method: 'POST',
-    headers: authHeaders(
-      withIdempotencyKey({ 'Content-Type': 'application/json' }, idempotencyKey)
-    ),
+    headers: authHeaders(withIdempotencyKey({ 'Content-Type': 'application/json' }, idempotencyKey)),
     body: JSON.stringify({ ...body, idempotencyKey }),
   });
   if (!res.ok) {
@@ -65,3 +65,4 @@ export async function postReversal(payload: ReversalPayload): Promise<ReversalRe
   }
   return res.json() as Promise<ReversalResult>;
 }
+

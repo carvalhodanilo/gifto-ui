@@ -1,16 +1,12 @@
 import { apiUrl } from '../config/api';
-import { withIdempotencyKey } from '../utils/idempotency';
-import type { VoucherByDisplayCode } from '../types/voucher-redeem';
-import type { RedeemVoucherPayload, RedeemVoucherResult } from '../types/voucher-redeem';
+import type { VoucherByDisplayCode, RedeemVoucherPayload, RedeemVoucherResult } from '../types/voucher-redeem';
 import { authHeaders } from './authHeaders';
+import { withIdempotencyKey } from '../utils/idempotency';
 
 /**
  * GET /v1/vouchers/display-code/{displayCode}
- * Opcional: header tenant para escopo.
  */
-export async function getVoucherByDisplayCode(
-  displayCode: string,
-): Promise<VoucherByDisplayCode> {
+export async function getVoucherByDisplayCode(displayCode: string): Promise<VoucherByDisplayCode> {
   const code = encodeURIComponent(displayCode.trim());
   const url = apiUrl(`/v1/vouchers/display-code/${code}`);
   const res = await fetch(url, { headers: authHeaders() });
@@ -25,16 +21,12 @@ export async function getVoucherByDisplayCode(
  * POST /v1/vouchers/redeem
  * Idempotency-Key vai no header (obrigatório); payload.idempotencyKey não é enviado no body.
  */
-export async function redeemVoucher(
-  payload: RedeemVoucherPayload
-): Promise<RedeemVoucherResult> {
+export async function redeemVoucher(payload: RedeemVoucherPayload): Promise<RedeemVoucherResult> {
   const { idempotencyKey, ...body } = payload;
   const url = apiUrl('/v1/vouchers/redeem');
   const res = await fetch(url, {
     method: 'POST',
-    headers: authHeaders(
-      withIdempotencyKey({ 'Content-Type': 'application/json' }, idempotencyKey)
-    ),
+    headers: authHeaders(withIdempotencyKey({ 'Content-Type': 'application/json' }, idempotencyKey)),
     body: JSON.stringify(body),
   });
   if (!res.ok) {
@@ -43,3 +35,4 @@ export async function redeemVoucher(
   }
   return res.json() as Promise<RedeemVoucherResult>;
 }
+

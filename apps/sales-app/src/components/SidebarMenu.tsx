@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { NavLink } from 'react-router-dom';
 import { cn } from '@core-ui/ui';
-import { LayoutDashboard, Ticket, Megaphone, FileText, Store, type LucideIcon } from 'lucide-react';
+import { LayoutDashboard, Ticket, Megaphone, FileText, Store, Gift, History, type LucideIcon } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 export interface SidebarMenuItem {
@@ -24,6 +24,10 @@ const defaultItems: SidebarMenuItem[] = [
   { to: '/sales', label: 'Vendas', icon: Ticket, allowedRoles: ['tenant_admin', 'tenant_operator'] },
   // Sales -> Campanhas: tenant_admin
   { to: '/campaigns', label: 'Campanhas', icon: Megaphone, allowedRoles: ['tenant_admin'] },
+  // Merchant -> Resgate: merchant_admin e merchant_operator
+  { to: '/redeem', label: 'Resgate', icon: Gift, allowedRoles: ['merchant_admin', 'merchant_operator'] },
+  // Merchant -> Histórico: merchant_admin e merchant_operator
+  { to: '/history', label: 'Histórico', icon: History, allowedRoles: ['merchant_admin', 'merchant_operator'] },
   // Sales -> Liquidação: system_admin
   { to: '/settlement', label: 'Liquidação', icon: FileText, allowedRoles: ['system_admin'] },
   // Sales -> Lojas: tenant_admin

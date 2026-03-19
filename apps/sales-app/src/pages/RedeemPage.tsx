@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { getVoucherByDisplayCode } from '../api/vouchers';
+import { getVoucherByDisplayCode } from '../api/voucher-redeem';
 import { VoucherSearchForm } from './redeem/VoucherSearchForm';
 import { VoucherResultCard } from './redeem/VoucherResultCard';
 import { RedeemVoucherModal } from './redeem/RedeemVoucherModal';
@@ -44,9 +44,7 @@ export function RedeemPage() {
 
   const handleRedeemSuccess = (newBalanceCents: number) => {
     const amountRedeemed = voucher ? voucher.balanceCents - newBalanceCents : 0;
-    setVoucher((prev) =>
-      prev ? { ...prev, balanceCents: newBalanceCents } : null
-    );
+    setVoucher((prev) => (prev ? { ...prev, balanceCents: newBalanceCents } : null));
     setModalOpen(false);
     setSuccessMessage({ amountCents: amountRedeemed, newBalanceCents });
   };
@@ -106,3 +104,4 @@ export function RedeemPage() {
     </div>
   );
 }
+

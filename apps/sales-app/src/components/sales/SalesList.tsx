@@ -45,7 +45,9 @@ export function SalesList({ items, onPrint }: SalesListProps) {
                 >
                   <td className="px-4 py-3 font-mono font-medium">{item.displayCode}</td>
                   <td className="px-4 py-3 text-muted-foreground">{item.campaignName}</td>
-                  <td className="px-4 py-3 text-right">{formatCurrency(item.amountCents)}</td>
+                  <td className="px-4 py-3 text-right">
+                    {item.amountCents != null ? formatCurrency(item.amountCents) : '—'}
+                  </td>
                   <td className="px-4 py-3 text-muted-foreground">
                     {formatDateTime(item.issuedAt)}
                   </td>

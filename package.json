@@ -9,11 +9,9 @@
     "packages/*"
   ],
   "scripts": {
-    "dev:admin": "npm run dev -w admin-app",
     "dev:sales": "npm run dev -w sales-app",
-    "build:admin": "npm run build -w admin-app",
     "build:sales": "npm run build -w sales-app",
-    "build": "npm run build:admin && npm run build:sales",
+    "build": "npm run build:sales",
     "lint": "eslint . --ext .ts,.tsx",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,md}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,css,md}\""

@@ -1,10 +1,9 @@
 import * as React from 'react';
 import { Button } from '@core-ui/ui';
-import { Dialog } from '../../components/Dialog';
+import { Dialog } from '../../components/sales/Dialog';
 import { formatCurrency, formatExpiry } from '../../utils/format';
-import { redeemVoucher } from '../../api/vouchers';
-import { useTenant } from '../../contexts/TenantContext';
-import { useMerchant } from '../../contexts/MerchantContext';
+import { redeemVoucher } from '../../api/voucher-redeem';
+import { useAuth } from '../../contexts/AuthContext';
 import type { VoucherByDisplayCode } from '../../types/voucher-redeem';
 
 const inputClassName =
@@ -34,16 +33,14 @@ export function RedeemVoucherModal({
   displayCodeUsedForSearch,
   onSuccess,
 }: RedeemVoucherModalProps) {
-  const { tenant } = useTenant();
-  const { merchant } = useMerchant();
+  const { tenantId, merchantId } = useAuth();
   const [amountReais, setAmountReais] = React.useState('');
   const [submitting, setSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
   const balanceCents = voucher.balanceCents;
   const amountCents = reaisToCents(amountReais);
-  const valid =
-    amountCents > 0 && amountCents <= balanceCents && !!tenant?.tenantId && !!merchant?.merchantId;
+  const valid = amountCents > 0 && amountCents <= balanceCents && !!tenantId && !!merchantId;
 
   const handleUseFullBalance = () => {
     setAmountReais((balanceCents / 100).toFixed(2));
@@ -52,14 +49,14 @@ export function RedeemVoucherModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!valid || !tenant?.tenantId || !merchant?.merchantId) return;
+    if (!valid || !tenantId || !merchantId) return;
     setError(null);
     setSubmitting(true);
     try {
       const idempotencyKey = `redeem-${voucher.voucherId}-${Date.now()}`;
       const res = await redeemVoucher({
-        tenantId: tenant.tenantId,
-        merchantId: merchant.merchantId,
+        tenantId,
+        merchantId,
         amountCents,
         displayCode: displayCodeUsedForSearch,
         idempotencyKey,
@@ -125,10 +122,13 @@ export function RedeemVoucherModal({
               <p className="text-xs text-destructive">Valor não pode ser maior que o saldo.</p>
             )}
             {amountCents > 0 && amountCents < balanceCents && (
-              <p className="text-xs text-muted-foreground">
-                Máximo: {formatCurrency(balanceCents)}
-              </p>
+              <p className="text-xs text-muted-foreground">Máximo: {formatCurrency(balanceCents)}</p>
             )}
+            {!tenantId || !merchantId ? (
+              <p className="text-xs text-destructive">
+                Não foi possível identificar tenant/merchant no token. Faça login novamente.
+              </p>
+            ) : null}
           </div>
           <Button
             type="button"
@@ -141,11 +141,7 @@ export function RedeemVoucherModal({
           </Button>
           {error && <p className="text-sm text-destructive">{error}</p>}
           <div className="flex flex-wrap gap-2 pt-2">
-            <Button
-              type="submit"
-              className="bg-[var(--brand-primary)] hover:opacity-90"
-              disabled={!valid || submitting}
-            >
+            <Button type="submit" className="bg-[var(--brand-primary)] hover:opacity-90" disabled={!valid || submitting}>
               {submitting ? 'Resgatando...' : 'Confirmar resgate'}
             </Button>
             <Button type="button" variant="outline" onClick={handleClose} disabled={submitting}>
@@ -157,3 +153,4 @@ export function RedeemVoucherModal({
     </Dialog>
   );
 }
+

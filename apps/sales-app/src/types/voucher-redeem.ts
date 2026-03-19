@@ -22,3 +22,4 @@ export interface RedeemVoucherResult {
   voucherId: string;
   newBalanceCents: number;
 }
+

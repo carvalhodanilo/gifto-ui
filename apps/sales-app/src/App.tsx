@@ -13,6 +13,8 @@ import { CampaignsPage } from './pages/CampaignsPage';
 import { SettlementPage } from './pages/SettlementPage';
 import { MerchantsPage } from './pages/MerchantsPage';
 import { MerchantDetailPage } from './pages/MerchantDetailPage';
+import { RedeemPage } from './pages/RedeemPage';
+import { HistoryPage } from './pages/HistoryPage';
 
 /**
  * Rotas após resolução do tenant: login (público) e rotas autenticadas (dashboard, vendas).
@@ -75,6 +77,22 @@ function AuthenticatedRoutes() {
           element={
             <RoleGuard allowedRoles={['tenant_admin']}>
               <MerchantDetailPage />
+            </RoleGuard>
+          }
+        />
+        <Route
+          path="redeem"
+          element={
+            <RoleGuard allowedRoles={['merchant_admin', 'merchant_operator']}>
+              <RedeemPage />
+            </RoleGuard>
+          }
+        />
+        <Route
+          path="history"
+          element={
+            <RoleGuard allowedRoles={['merchant_admin', 'merchant_operator']}>
+              <HistoryPage />
             </RoleGuard>
           }
         />

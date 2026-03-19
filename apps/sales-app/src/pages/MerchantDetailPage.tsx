@@ -299,7 +299,6 @@ export function MerchantDetailPage() {
     try {
       await updateMerchantBankAccount(tenantId, idToLoad, payload);
       const updated = await getMerchantBankAccount(tenantId, idToLoad);
-      setBankAccount(updated);
       setBankForm(bankFormFromAccount(updated));
       setBankEditing(false);
     } catch (err) {

@@ -25,7 +25,6 @@
   "references": [
     { "path": "packages/ui" },
     { "path": "packages/api-client" },
-    { "path": "apps/admin-app" },
     { "path": "apps/sales-app" }
   ]
 }

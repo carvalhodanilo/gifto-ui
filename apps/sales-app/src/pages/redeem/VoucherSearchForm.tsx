@@ -10,7 +10,7 @@ interface VoucherSearchFormProps {
   onChange: (value: string) => void;
   onSearch: () => void;
   loading?: boolean;
-  inputRef?: React.RefObject<HTMLInputElement | null>;
+  inputRef?: React.RefObject<HTMLInputElement>;
 }
 
 /** Campo código + botão Buscar; Enter dispara busca. */
@@ -64,3 +64,4 @@ export function VoucherSearchForm({
     </form>
   );
 }
+

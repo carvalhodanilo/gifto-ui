@@ -1,5 +1,5 @@
 import { Button } from '@core-ui/ui';
-import { VoucherStatusBadge } from '../../components/VoucherStatusBadge';
+import { VoucherStatusBadge } from '../../components/sales/VoucherStatusBadge';
 import { formatCurrency, formatExpiry } from '../../utils/format';
 import type { VoucherByDisplayCode } from '../../types/voucher-redeem';
 
@@ -32,9 +32,7 @@ export function VoucherResultCard({ voucher, displayCodeUsedForSearch, onRedeem 
   return (
     <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <span className="font-mono text-lg font-semibold text-foreground">
-          {displayCodeUsedForSearch}
-        </span>
+        <span className="font-mono text-lg font-semibold text-foreground">{displayCodeUsedForSearch}</span>
         <VoucherStatusBadge status={displayStatus} />
       </div>
       <dl className="grid gap-2 text-sm">
@@ -48,9 +46,7 @@ export function VoucherResultCard({ voucher, displayCodeUsedForSearch, onRedeem 
         </div>
         <div>
           <dt className="text-muted-foreground">Saldo</dt>
-          <dd className="text-lg font-semibold text-foreground">
-            {formatCurrency(voucher.balanceCents)}
-          </dd>
+          <dd className="text-lg font-semibold text-foreground">{formatCurrency(voucher.balanceCents)}</dd>
         </div>
       </dl>
       {!hasBalance && (
@@ -68,3 +64,4 @@ export function VoucherResultCard({ voucher, displayCodeUsedForSearch, onRedeem 
     </div>
   );
 }
+

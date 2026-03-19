@@ -1,11 +1,10 @@
 import * as React from 'react';
 import { Button } from '@core-ui/ui';
-import { useTenant } from '../contexts/TenantContext';
-import { useMerchant } from '../contexts/MerchantContext';
 import { getLedgerEntries } from '../api/ledger';
 import { formatCurrency, formatDateTime } from '../utils/format';
 import { LedgerEntryDetailModal } from './history/LedgerEntryDetailModal';
 import type { LedgerEntry } from '../types/ledger';
+import { useAuth } from '../contexts/AuthContext';
 
 const TYPE_LABELS: Record<string, string> = {
   REDEEM: 'Resgate',
@@ -24,8 +23,7 @@ function nextDir(currentSort: string, currentDir: 'asc' | 'desc', newSort: strin
 
 /** Página de histórico: tabela com busca, paginação e ordenação; modal ao clicar na linha. */
 export function HistoryPage() {
-  const { tenant } = useTenant();
-  const { merchant } = useMerchant();
+  const { tenantId, merchantId } = useAuth();
   const [search, setSearch] = React.useState('');
   const [searchInput, setSearchInput] = React.useState('');
   const [page, setPage] = React.useState(0);
@@ -41,9 +39,6 @@ export function HistoryPage() {
   const [error, setError] = React.useState<string | null>(null);
   const [selectedEntry, setSelectedEntry] = React.useState<LedgerEntry | null>(null);
   const [modalOpen, setModalOpen] = React.useState(false);
-
-  const tenantId = tenant?.tenantId ?? '';
-  const merchantId = merchant?.merchantId ?? '';
 
   const loadEntries = React.useCallback(() => {
     if (!tenantId || !merchantId) {
@@ -137,6 +132,12 @@ export function HistoryPage() {
         </Button>
       </form>
 
+      {!tenantId || !merchantId ? (
+        <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
+          Não foi possível identificar tenant/merchant no token. Faça login novamente.
+        </div>
+      ) : null}
+
       {error && (
         <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
           {error}
@@ -205,18 +206,12 @@ export function HistoryPage() {
                       onClick={() => openDetail(entry)}
                       className="cursor-pointer border-b border-border last:border-0 hover:bg-muted/50"
                     >
-                      <td className="px-4 py-3 font-mono font-medium text-foreground">
-                        {entry.displayCode ?? '—'}
-                      </td>
+                      <td className="px-4 py-3 font-mono font-medium text-foreground">{entry.displayCode ?? '—'}</td>
                       <td className="px-4 py-3 font-medium text-foreground">
                         {TYPE_LABELS[entry.type] ?? entry.type}
                       </td>
-                      <td className="px-4 py-3 text-foreground">
-                        {formatCurrency(entry.amountCents)}
-                      </td>
-                      <td className="px-4 py-3 text-foreground">
-                        {formatDateTime(entry.createdAt)}
-                      </td>
+                      <td className="px-4 py-3 text-foreground">{formatCurrency(entry.amountCents)}</td>
+                      <td className="px-4 py-3 text-foreground">{formatDateTime(entry.createdAt)}</td>
                     </tr>
                   ))
                 )}
@@ -226,23 +221,13 @@ export function HistoryPage() {
 
           {totalPages > 1 && (
             <div className="flex flex-wrap items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={!hasPrev}
-                onClick={() => setPage((p) => p - 1)}
-              >
+              <Button variant="outline" size="sm" disabled={!hasPrev} onClick={() => setPage((p) => p - 1)}>
                 Anterior
               </Button>
               <span className="text-sm text-muted-foreground">
                 Página {data.currentPage + 1} de {totalPages} ({data.total} itens)
               </span>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={!hasNext}
-                onClick={() => setPage((p) => p + 1)}
-              >
+              <Button variant="outline" size="sm" disabled={!hasNext} onClick={() => setPage((p) => p + 1)}>
                 Próxima
               </Button>
             </div>
@@ -262,3 +247,4 @@ export function HistoryPage() {
     </div>
   );
 }
+

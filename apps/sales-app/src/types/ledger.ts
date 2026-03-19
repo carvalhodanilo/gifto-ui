@@ -1,5 +1,5 @@
 /**
- * Item retornado em GET /vouchers/ledger-entries.
+ * Item retornado em GET /v1/vouchers/ledger-entries.
  * ledgerEntryId: uso interno (ex.: extorno); não exibido na tabela.
  * displayCode: exibido na listagem.
  */
@@ -11,7 +11,7 @@ export interface LedgerEntry {
   displayCode?: string;
 }
 
-/** Payload de POST /vouchers/reversal */
+/** Payload de POST /v1/vouchers/reversal */
 export interface ReversalPayload {
   tenantId: string;
   merchantId: string;
@@ -21,7 +21,7 @@ export interface ReversalPayload {
   idempotencyKey: string;
 }
 
-/** Resposta de sucesso de POST /vouchers/reversal */
+/** Resposta de sucesso de POST /v1/vouchers/reversal */
 export interface ReversalResult {
   voucherId: string;
   balanceCents: number;
@@ -43,3 +43,4 @@ export interface LedgerEntriesParams {
   sort?: string;
   dir?: 'asc' | 'desc';
 }
+
