@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { formatCurrency } from '../../utils/format';
 import { SettlementStatusBadge } from './SettlementStatusBadge';
 import type { SettlementEntry } from '../../types/settlement-api';

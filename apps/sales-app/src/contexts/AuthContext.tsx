@@ -1,56 +1,171 @@
 import * as React from 'react';
-import type { AuthUser } from '../types/auth';
+import { useTenant } from './TenantContext';
+import { initKeycloak, getKeycloakInstance, logoutUrlRedirectUri } from '../auth/keycloakClient';
+
+export type TokenParsed = unknown;
 
 export interface AuthState {
-  user: AuthUser | null;
-  isAuthenticated: boolean;
-  login: (email: string, password: string, tenantId: string) => Promise<void>;
+  authenticated: boolean;
+  loading: boolean;
+  token: string | null;
+  tokenParsed: TokenParsed | null;
+  username: string | null;
+  email: string | null;
+  roles: string[];
+  tenantId: string | null;
+  merchantId: string | null;
+  login: () => void;
   logout: () => void;
 }
 
-const defaultState: AuthState = {
-  user: null,
-  isAuthenticated: false,
-  login: async () => {},
-  logout: () => {},
-};
+const AuthContext = React.createContext<AuthState | undefined>(undefined);
 
-const AuthContext = React.createContext<AuthState>(defaultState);
+type TokenParsedRecord = Record<string, unknown>;
 
-const MOCK_LOGIN_DELAY_MS = 600;
+function asString(value: unknown): string | null {
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number') return String(value);
+  return null;
+}
 
-function createMockUser(email: string): AuthUser {
-  return {
-    userId: 'mock-user-1',
-    email,
-    merchantId: 'mock-merchant-1',
-    merchantName: 'Merchant Demo',
-  };
+function toTokenParsedRecord(tokenParsed: unknown): TokenParsedRecord | null {
+  if (!tokenParsed || typeof tokenParsed !== 'object') return null;
+  return tokenParsed as TokenParsedRecord;
+}
+
+function parseRoles(tokenParsed: unknown): string[] {
+  const roles = new Set<string>();
+  const tp = toTokenParsedRecord(tokenParsed);
+  if (!tp) return [];
+
+  const realmAccess = tp['realm_access'];
+  if (realmAccess && typeof realmAccess === 'object') {
+    const realmRoles = (realmAccess as Record<string, unknown>)['roles'];
+    if (Array.isArray(realmRoles)) {
+      realmRoles.forEach((r) => {
+        const s = asString(r);
+        if (s) roles.add(s);
+      });
+    }
+  }
+
+  const resourceAccess = tp['resource_access'];
+  if (resourceAccess && typeof resourceAccess === 'object') {
+    Object.values(resourceAccess as Record<string, unknown>).forEach((access) => {
+      if (!access || typeof access !== 'object') return;
+      const rs = (access as Record<string, unknown>)['roles'];
+      if (Array.isArray(rs)) {
+        rs.forEach((r) => {
+          const s = asString(r);
+          if (s) roles.add(s);
+        });
+      }
+    });
+  }
+
+  return Array.from(roles);
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = React.useState<AuthUser | null>(null);
+  const { tenant, setTenantFromLogin } = useTenant();
 
-  const login = React.useCallback(async (email: string, _password: string, _tenantId: string) => {
-    await new Promise((r) => setTimeout(r, MOCK_LOGIN_DELAY_MS));
-    setUser(createMockUser(email));
+  const [state, setState] = React.useState<AuthState>({
+    authenticated: false,
+    loading: true,
+    token: null,
+    tokenParsed: null,
+    username: null,
+    email: null,
+    roles: [],
+    tenantId: null,
+    merchantId: null,
+    login: () => {},
+    logout: () => {},
+  });
+
+  const applyClaimsToContexts = React.useCallback(
+    (tokenParsed: unknown) => {
+      const tp = toTokenParsedRecord(tokenParsed);
+      const tenantId = asString(tp?.tenant_id);
+      const merchantId = asString(tp?.merchant_id);
+
+      if (tenantId) {
+        // Mantemos o "nome" atual do tenant (mock/tema) e só atualizamos o tenantId para chamadas API.
+        setTenantFromLogin(tenantId, tenant?.name ?? tenantId);
+      }
+
+      return { tenantId, merchantId };
+    },
+    [tenant?.name, setTenantFromLogin]
+  );
+
+  const login = React.useCallback(() => {
+    const kc = getKeycloakInstance();
+    const redirectUri = window.location.href;
+    if (kc) {
+      kc.login({ redirectUri }).catch(() => {});
+      return;
+    }
+    initKeycloak()
+      .then((instance) => instance.login({ redirectUri }))
+      .catch(() => {});
   }, []);
 
   const logout = React.useCallback(() => {
-    setUser(null);
+    const kc = getKeycloakInstance();
+    const redirectUri = logoutUrlRedirectUri();
+    if (kc) {
+      kc.logout({ redirectUri }).catch(() => {});
+      return;
+    }
+    initKeycloak()
+      .then((instance) => instance.logout({ redirectUri }))
+      .catch(() => {});
   }, []);
 
-  const value: AuthState = React.useMemo(
-    () => ({ user, isAuthenticated: !!user, login, logout }),
-    [user, login, logout]
-  );
+  React.useEffect(() => {
+    let cancelled = false;
+    initKeycloak()
+      .then((kc) => {
+        if (cancelled) return;
+        const tp = kc.tokenParsed;
+        const tpRecord = toTokenParsedRecord(tp);
+        const username = asString(tpRecord?.preferred_username);
+        const email = asString(tpRecord?.email);
+        const roles = parseRoles(tp);
+        const { tenantId, merchantId } = applyClaimsToContexts(tp);
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+        setState((prev) => ({
+          ...prev,
+          authenticated: kc.authenticated ?? false,
+          loading: false,
+          token: kc.token ?? null,
+          tokenParsed: tp ?? null,
+          username,
+          email,
+          roles,
+          tenantId,
+          merchantId,
+          login,
+          logout,
+        }));
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setState((prev) => ({ ...prev, loading: false, authenticated: false, login, logout }));
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [applyClaimsToContexts, login, logout]);
+
+  return <AuthContext.Provider value={state}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth(): AuthState {
   const ctx = React.useContext(AuthContext);
-  if (ctx === undefined) {
+  if (!ctx) {
     throw new Error('useAuth must be used within AuthProvider');
   }
   return ctx;

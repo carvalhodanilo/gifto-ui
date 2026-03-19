@@ -5,12 +5,14 @@ import { TenantTheme } from './components/TenantTheme';
 import { TenantLoadingScreen } from './components/TenantLoadingScreen';
 import { TenantNotFoundScreen } from './components/TenantNotFoundScreen';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { RoleGuard } from './components/RoleGuard';
 import { AppLayout } from './layouts/AppLayout';
-import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { SalesPage } from './pages/SalesPage';
 import { CampaignsPage } from './pages/CampaignsPage';
 import { SettlementPage } from './pages/SettlementPage';
+import { MerchantsPage } from './pages/MerchantsPage';
+import { MerchantDetailPage } from './pages/MerchantDetailPage';
 
 /**
  * Rotas após resolução do tenant: login (público) e rotas autenticadas (dashboard, vendas).
@@ -19,7 +21,6 @@ import { SettlementPage } from './pages/SettlementPage';
 function AuthenticatedRoutes() {
   return (
     <Routes>
-      <Route path="/login" element={<LoginPage />} />
       <Route
         path="/"
         element={
@@ -29,10 +30,54 @@ function AuthenticatedRoutes() {
         }
       >
         <Route index element={<Navigate to="/dashboard" replace />} />
-        <Route path="dashboard" element={<DashboardPage />} />
-        <Route path="sales" element={<SalesPage />} />
-        <Route path="campaigns" element={<CampaignsPage />} />
-        <Route path="settlement" element={<SettlementPage />} />
+        <Route
+          path="dashboard"
+          element={
+            <RoleGuard allowedRoles={['tenant_admin']}>
+              <DashboardPage />
+            </RoleGuard>
+          }
+        />
+        <Route
+          path="sales"
+          element={
+            <RoleGuard allowedRoles={['tenant_admin', 'tenant_operator']}>
+              <SalesPage />
+            </RoleGuard>
+          }
+        />
+        <Route
+          path="campaigns"
+          element={
+            <RoleGuard allowedRoles={['tenant_admin']}>
+              <CampaignsPage />
+            </RoleGuard>
+          }
+        />
+        <Route
+          path="settlement"
+          element={
+            <RoleGuard allowedRoles={['system_admin']}>
+              <SettlementPage />
+            </RoleGuard>
+          }
+        />
+        <Route
+          path="merchants"
+          element={
+            <RoleGuard allowedRoles={['tenant_admin']}>
+              <MerchantsPage />
+            </RoleGuard>
+          }
+        />
+        <Route
+          path="merchants/:merchantId"
+          element={
+            <RoleGuard allowedRoles={['tenant_admin']}>
+              <MerchantDetailPage />
+            </RoleGuard>
+          }
+        />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

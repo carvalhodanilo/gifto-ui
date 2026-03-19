@@ -43,18 +43,19 @@ export interface VoucherListItem {
   status?: string;
 }
 
-/** Item retornado por GET /tenants/{tenantId}/vouchers (listagem por tenant). */
+/** Item retornado por GET /v1/vouchers/list (listagem por tenant; tenant via header). */
 export interface TenantVoucherItem {
   voucherId: string;
   campaignId: string;
   campaignName: string;
-  displayCode: string;
+  displayCode?: string;
   status: string;
+  amountCents?: number;
   issuedAt: string; // ISO 8601
   expiresAt: string; // ISO 8601
 }
 
-/** Resposta paginada de GET /tenants/{tenantId}/vouchers. */
+/** Resposta paginada de GET /v1/vouchers/list. */
 export interface TenantVouchersResponse {
   currentPage: number;
   perPage: number;

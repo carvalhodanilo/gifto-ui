@@ -6,6 +6,7 @@ import type {
   ReversalPayload,
   ReversalResult,
 } from '../types/ledger';
+import { authHeaders } from './authHeaders';
 
 /**
  * Monta query string a partir dos params (search, page, perPage, sort, dir).
@@ -28,16 +29,13 @@ function buildQueryString(params: LedgerEntriesParams): string {
  * Headers: tenant, merchant. Query: search, page, perPage, sort, dir.
  */
 export async function getLedgerEntries(
-  tenantId: string,
-  merchantId: string,
+  _tenantId: string,
+  _merchantId: string,
   params: LedgerEntriesParams = {}
 ): Promise<LedgerEntriesResponse> {
   const url = apiUrl('v1/vouchers/ledger-entries') + buildQueryString(params);
   const res = await fetch(url, {
-    headers: {
-      tenant: tenantId,
-      merchant: merchantId,
-    },
+    headers: authHeaders(),
   });
   if (!res.ok) {
     const text = await res.text();
@@ -56,9 +54,8 @@ export async function postReversal(payload: ReversalPayload): Promise<ReversalRe
   const url = apiUrl('v1/vouchers/reversal');
   const res = await fetch(url, {
     method: 'POST',
-    headers: withIdempotencyKey(
-      { 'Content-Type': 'application/json' },
-      idempotencyKey
+    headers: authHeaders(
+      withIdempotencyKey({ 'Content-Type': 'application/json' }, idempotencyKey)
     ),
     body: JSON.stringify({ ...body, idempotencyKey }),
   });

@@ -1,4 +1,3 @@
-import { useNavigate } from 'react-router-dom';
 import { Button } from '@core-ui/ui';
 import { LogOut } from 'lucide-react';
 import { useTenant } from '../contexts/TenantContext';
@@ -10,24 +9,25 @@ import { TenantBranding } from './TenantBranding';
  * Top bar: tenant (esquerda), merchant + logout (direita) — mesmo padrão do sales-app.
  */
 export function TopBar() {
-  const navigate = useNavigate();
   const { tenant, resetTenant } = useTenant();
-  const { resetMerchant } = useMerchant();
-  const { user, logout } = useAuth();
+  const { merchant, resetMerchant } = useMerchant();
+  const { username, email, logout } = useAuth();
 
   const handleLogout = () => {
     resetTenant();
     resetMerchant();
     logout();
-    navigate('/login', { replace: true });
   };
+
+  const brandingTenant =
+    tenant && merchant?.merchantName ? { ...tenant, name: merchant.merchantName } : tenant;
 
   return (
     <header className="flex h-14 shrink-0 items-center justify-between bg-card px-4 shadow-sm">
-      <TenantBranding tenant={tenant} size="sm" />
+      <TenantBranding tenant={brandingTenant} size="sm" />
       <div className="flex items-center gap-3">
         <span className="text-sm text-muted-foreground">
-          {user?.merchantName ?? user?.email}
+          {username ?? email ?? ''}
         </span>
         <Button
           variant="ghost"

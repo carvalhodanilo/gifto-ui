@@ -1,5 +1,6 @@
 import { apiUrl } from '../config/api';
 import type { GetTenantsResponse } from '../types/tenant-api';
+import { authHeaders } from './authHeaders';
 
 /**
  * Lista de empresas (tenants) para o seletor no login.
@@ -7,7 +8,7 @@ import type { GetTenantsResponse } from '../types/tenant-api';
  */
 export async function getTenants(): Promise<GetTenantsResponse> {
   const url = apiUrl('/tenants');
-  const res = await fetch(url);
+  const res = await fetch(url, { headers: authHeaders() });
 
   if (!res.ok) {
     const text = await res.text();

@@ -1,4 +1,3 @@
-import { useNavigate } from 'react-router-dom';
 import { Button } from '@core-ui/ui';
 import { LogOut } from 'lucide-react';
 import { useTenant } from '../contexts/TenantContext';
@@ -9,14 +8,12 @@ import { TenantBranding } from './TenantBranding';
  * Top bar: branding do tenant (esquerda), user + logout (direita).
  */
 export function TopBar() {
-  const navigate = useNavigate();
   const { tenant, resetTenant } = useTenant();
-  const { user, logout } = useAuth();
+  const { username, email, logout } = useAuth();
 
   const handleLogout = () => {
     resetTenant();
     logout();
-    navigate('/login', { replace: true });
   };
 
   return (
@@ -24,7 +21,7 @@ export function TopBar() {
       <TenantBranding tenant={tenant} size="sm" />
       <div className="flex items-center gap-3">
         <span className="text-sm text-muted-foreground">
-          {user?.merchantName ?? user?.email}
+          {username ?? email ?? ''}
         </span>
         <Button
           variant="ghost"

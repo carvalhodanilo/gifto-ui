@@ -10,7 +10,7 @@ interface DialogProps {
 }
 
 /** Modal centralizado; fecha só por ação (ex.: Cancelar). */
-export function Dialog({ open, onClose, children, className }: DialogProps) {
+export function Dialog({ open, children, className }: DialogProps) {
   React.useEffect(() => {
     if (open) document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = ''; };

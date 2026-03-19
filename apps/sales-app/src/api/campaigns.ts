@@ -5,16 +5,16 @@ import type {
   CreateCampaignRequest,
 } from '../types/campaign-api';
 import type { Campaign } from '../types/voucher';
+import { authHeaders } from './authHeaders';
 
 /**
  * Lista de campanhas do tenant para o seletor no modal de vendas.
- * GET {baseUrl}/campaigns?tenantId=<tenantId>
+ * GET {baseUrl}/campaigns
  */
-export async function getCampaigns(tenantId: string): Promise<Campaign[]> {
-  const url = new URL(apiUrl('/campaigns'));
-  url.searchParams.set('tenantId', tenantId);
-
-  const res = await fetch(url.toString());
+export async function getCampaigns(_tenantId: string): Promise<Campaign[]> {
+  // Tenant é resolvido via claims do token; mantemos o parâmetro por compatibilidade interna.
+  void _tenantId;
+  const res = await fetch(apiUrl('/campaigns'), { headers: authHeaders() });
 
   if (!res.ok) {
     const text = await res.text();
@@ -28,12 +28,14 @@ export async function getCampaigns(tenantId: string): Promise<Campaign[]> {
 
 /**
  * Lista todas as campanhas do tenant. GET /campaigns/all
- * Header: tenant: tenantId
+ * Authorization via token
  */
-export async function getAllCampaigns(tenantId: string): Promise<GetAllByTenantOutput['campaignList']> {
+export async function getAllCampaigns(_tenantId: string): Promise<GetAllByTenantOutput['campaignList']> {
+  // Tenant é resolvido via claims do token; mantemos o parâmetro por compatibilidade interna.
+  void _tenantId;
   const url = apiUrl('/campaigns/all');
   const res = await fetch(url, {
-    headers: { tenant: tenantId },
+    headers: authHeaders(),
   });
 
   if (!res.ok) {
@@ -54,19 +56,18 @@ export async function getAllCampaigns(tenantId: string): Promise<GetAllByTenantO
 
 /**
  * Cria uma campanha. POST /campaigns
- * Header: tenant: tenantId
+ * Authorization via token
  */
 export async function createCampaign(
-  tenantId: string,
+  _tenantId: string,
   body: CreateCampaignRequest
 ): Promise<void> {
   const url = apiUrl('/campaigns');
   const res = await fetch(url, {
     method: 'POST',
-    headers: {
+    headers: authHeaders({
       'Content-Type': 'application/json',
-      tenant: tenantId,
-    },
+    }),
     body: JSON.stringify(body),
   });
 
@@ -85,20 +86,19 @@ export async function createCampaign(
 
 /**
  * Atualiza uma campanha. PUT /campaigns/{campaignId}/update
- * Header: tenant: tenantId
+ * Authorization via token
  */
 export async function updateCampaign(
-  tenantId: string,
+  _tenantId: string,
   campaignId: string,
   body: CreateCampaignRequest
 ): Promise<void> {
   const url = apiUrl(`/campaigns/${encodeURIComponent(campaignId)}/update`);
   const res = await fetch(url, {
     method: 'PUT',
-    headers: {
+    headers: authHeaders({
       'Content-Type': 'application/json',
-      tenant: tenantId,
-    },
+    }),
     body: JSON.stringify(body),
   });
 
@@ -117,16 +117,16 @@ export async function updateCampaign(
 
 /**
  * Ativa uma campanha. PATCH /campaigns/{campaignId}/activate
- * Header: tenant: tenantId. Sem body.
+ * Authorization via token. Sem body.
  */
 export async function activateCampaign(
-  tenantId: string,
+  _tenantId: string,
   campaignId: string
 ): Promise<void> {
   const url = apiUrl(`/campaigns/${encodeURIComponent(campaignId)}/activate`);
   const res = await fetch(url, {
     method: 'PATCH',
-    headers: { tenant: tenantId },
+    headers: authHeaders(),
   });
 
   if (!res.ok) {
@@ -144,16 +144,16 @@ export async function activateCampaign(
 
 /**
  * Pausa uma campanha. PATCH /campaigns/{campaignId}/pause
- * Header: tenant: tenantId. Sem body.
+ * Authorization via token. Sem body.
  */
 export async function pauseCampaign(
-  tenantId: string,
+  _tenantId: string,
   campaignId: string
 ): Promise<void> {
   const url = apiUrl(`/campaigns/${encodeURIComponent(campaignId)}/pause`);
   const res = await fetch(url, {
     method: 'PATCH',
-    headers: { tenant: tenantId },
+    headers: authHeaders(),
   });
 
   if (!res.ok) {
@@ -171,16 +171,16 @@ export async function pauseCampaign(
 
 /**
  * Suspende uma campanha. PATCH /campaigns/{campaignId}/suspend
- * Header: tenant: tenantId. Sem body.
+ * Authorization via token. Sem body.
  */
 export async function suspendCampaign(
-  tenantId: string,
+  _tenantId: string,
   campaignId: string
 ): Promise<void> {
   const url = apiUrl(`/campaigns/${encodeURIComponent(campaignId)}/suspend`);
   const res = await fetch(url, {
     method: 'PATCH',
-    headers: { tenant: tenantId },
+    headers: authHeaders(),
   });
 
   if (!res.ok) {

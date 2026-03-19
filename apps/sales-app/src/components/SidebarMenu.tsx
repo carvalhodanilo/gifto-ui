@@ -1,19 +1,33 @@
+import * as React from 'react';
 import { NavLink } from 'react-router-dom';
 import { cn } from '@core-ui/ui';
-import { LayoutDashboard, Ticket, Megaphone, FileText, type LucideIcon } from 'lucide-react';
+import { LayoutDashboard, Ticket, Megaphone, FileText, Store, type LucideIcon } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 export interface SidebarMenuItem {
   to: string;
   label: string;
   icon: LucideIcon;
   end?: boolean;
+  /**
+   * Papéis que permitem ver este item.
+   * - Se `undefined`, o item é sempre visível.
+   * - Se informado, será exibido quando o usuário tiver QUALQUER um dos papéis.
+   */
+  allowedRoles?: string[];
 }
 
 const defaultItems: SidebarMenuItem[] = [
-  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, end: true },
-  { to: '/sales', label: 'Vendas', icon: Ticket },
-  { to: '/campaigns', label: 'Campanhas', icon: Megaphone },
-  { to: '/settlement', label: 'Liquidação', icon: FileText },
+  // Sales -> Dashboard: tenant_admin
+  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, end: true, allowedRoles: ['tenant_admin'] },
+  // Sales -> Vendas: tenant_admin e tenant_operator
+  { to: '/sales', label: 'Vendas', icon: Ticket, allowedRoles: ['tenant_admin', 'tenant_operator'] },
+  // Sales -> Campanhas: tenant_admin
+  { to: '/campaigns', label: 'Campanhas', icon: Megaphone, allowedRoles: ['tenant_admin'] },
+  // Sales -> Liquidação: system_admin
+  { to: '/settlement', label: 'Liquidação', icon: FileText, allowedRoles: ['system_admin'] },
+  // Sales -> Lojas: tenant_admin
+  { to: '/merchants', label: 'Lojas', icon: Store, allowedRoles: ['tenant_admin'] },
 ];
 
 interface SidebarMenuProps {
@@ -25,10 +39,19 @@ interface SidebarMenuProps {
  * Sidebar navigation menu. Uses NavLink for active state.
  */
 export function SidebarMenu({ items = defaultItems, className }: SidebarMenuProps) {
+  const { roles } = useAuth();
+
+  const visibleItems = React.useMemo(() => {
+    return items.filter((item) => {
+      if (!item.allowedRoles || item.allowedRoles.length === 0) return true;
+      return item.allowedRoles.some((role) => roles.includes(role));
+    });
+  }, [items, roles]);
+
   return (
     <aside className={cn('w-52 shrink-0 bg-card/50 p-3', className)}>
       <nav className="flex flex-col gap-0.5">
-        {items.map(({ to, label, icon: Icon, end }) => (
+        {visibleItems.map(({ to, label, icon: Icon, end }) => (
           <NavLink
             key={to}
             to={to}

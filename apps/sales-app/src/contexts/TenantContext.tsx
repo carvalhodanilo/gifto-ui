@@ -41,7 +41,8 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
     setStatus('loading');
     setError(null);
     await new Promise((r) => setTimeout(r, MOCK_LOADING_MS));
-    setTenant({ ...initialTenant });
+    // Não sobrescreve tenantId vindo do token (AuthContext pode ter setado antes).
+    setTenant((prev) => prev ?? { ...initialTenant });
     setStatus('success');
   }, [initialTenant]);
 
@@ -49,9 +50,18 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
     resolve();
   }, [resolve]);
 
-  const setTenantFromLogin = React.useCallback((tenantId: string, name: string) => {
-    setTenant((prev) => (prev ? { ...prev, tenantId, name } : null));
-  }, []);
+  const setTenantFromLogin = React.useCallback(
+    (tenantId: string, _name?: string) => {
+      void _name; // Mantém compatibilidade com AuthContext; por enquanto não usamos o "name" do token.
+      // O tema (nome/logo/cores) vem do tenant mock (por enquanto) e o backend resolve o escopo por JWT.
+      // Então: atualizamos apenas `tenantId` para usar nas chamadas autenticadas.
+      setTenant((prev) => {
+        if (prev) return { ...prev, tenantId };
+        return { ...initialTenant, tenantId };
+      });
+    },
+    [initialTenant]
+  );
 
   const resetTenant = React.useCallback(() => {
     setTenant({ ...initialTenant });

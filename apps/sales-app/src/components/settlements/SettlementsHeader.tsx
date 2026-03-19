@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Button } from '@core-ui/ui';
 import { Play } from 'lucide-react';
 import { PageHeader } from '../PageHeader';
-import { getLastPeriodKeys } from '../../utils/iso-week';
+import { getLastClosedPeriodKeys } from '../../utils/iso-week';
 
 interface SettlementsHeaderProps {
   periodKey: string;
@@ -20,7 +20,7 @@ export function SettlementsHeader({
   onRunBatch,
   runBatchLoading,
 }: SettlementsHeaderProps) {
-  const periodOptions = React.useMemo(() => getLastPeriodKeys(3), []);
+  const periodOptions = React.useMemo(() => getLastClosedPeriodKeys(3), []);
 
   return (
     <div className="space-y-4">

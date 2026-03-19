@@ -1,11 +1,10 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { TenantProvider, useTenant } from './contexts/TenantContext';
 import { MerchantProvider } from './contexts/MerchantContext';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { AuthProvider } from './contexts/AuthContext';
 import { TenantTheme } from './components/TenantTheme';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { AppLayout } from './layouts/AppLayout';
-import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { RedeemPage } from './pages/RedeemPage';
 import { HistoryPage } from './pages/HistoryPage';
@@ -13,7 +12,6 @@ import { HistoryPage } from './pages/HistoryPage';
 function AuthenticatedRoutes() {
   return (
     <Routes>
-      <Route path="/login" element={<LoginPage />} />
       <Route
         path="/"
         element={

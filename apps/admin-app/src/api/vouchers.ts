@@ -2,6 +2,7 @@ import { apiUrl } from '../config/api';
 import { withIdempotencyKey } from '../utils/idempotency';
 import type { VoucherByDisplayCode } from '../types/voucher-redeem';
 import type { RedeemVoucherPayload, RedeemVoucherResult } from '../types/voucher-redeem';
+import { authHeaders } from './authHeaders';
 
 /**
  * GET /v1/vouchers/display-code/{displayCode}
@@ -9,13 +10,10 @@ import type { RedeemVoucherPayload, RedeemVoucherResult } from '../types/voucher
  */
 export async function getVoucherByDisplayCode(
   displayCode: string,
-  tenantId?: string
 ): Promise<VoucherByDisplayCode> {
   const code = encodeURIComponent(displayCode.trim());
   const url = apiUrl(`/v1/vouchers/display-code/${code}`);
-  const headers: HeadersInit = {};
-  if (tenantId) headers['tenant'] = tenantId;
-  const res = await fetch(url, { headers });
+  const res = await fetch(url, { headers: authHeaders() });
   if (!res.ok) {
     const text = await res.text();
     throw new Error(text || `Voucher não encontrado: ${res.status}`);
@@ -34,9 +32,8 @@ export async function redeemVoucher(
   const url = apiUrl('/v1/vouchers/redeem');
   const res = await fetch(url, {
     method: 'POST',
-    headers: withIdempotencyKey(
-      { 'Content-Type': 'application/json' },
-      idempotencyKey
+    headers: authHeaders(
+      withIdempotencyKey({ 'Content-Type': 'application/json' }, idempotencyKey)
     ),
     body: JSON.stringify(body),
   });

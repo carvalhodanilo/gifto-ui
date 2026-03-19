@@ -1,7 +1,7 @@
-import * as React from 'react';
 import { Button } from '@core-ui/ui';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { formatDateTime, formatExpiry } from '../../utils/format';
+import { formatCurrency, formatDateTime, formatExpiry } from '../../utils/format';
+import { VoucherStatusBadge } from './VoucherStatusBadge';
 import type { TenantVoucherItem } from '../../types/voucher';
 
 interface SalesTableProps {
@@ -16,7 +16,7 @@ interface SalesTableProps {
 
 /**
  * Tabela responsiva de vouchers: desktop = tabela; mobile = cards.
- * Colunas: displayCode, campaignName, status, issuedAt, expiresAt.
+ * Colunas: campaignName, valor (R$), status (badge), issuedAt, expiresAt.
  * Linha clicável abre detalhes (callback onRowClick).
  */
 export function SalesTable({
@@ -46,8 +46,8 @@ export function SalesTable({
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border bg-muted/50">
-                    <th className="px-4 py-3 text-left font-medium text-foreground">Código</th>
                     <th className="px-4 py-3 text-left font-medium text-foreground">Campanha</th>
+                    <th className="px-4 py-3 text-right font-medium text-foreground">Valor (R$)</th>
                     <th className="px-4 py-3 text-left font-medium text-foreground">Status</th>
                     <th className="px-4 py-3 text-left font-medium text-foreground">Emitido em</th>
                     <th className="px-4 py-3 text-left font-medium text-foreground">Expira em</th>
@@ -68,9 +68,13 @@ export function SalesTable({
                       }}
                       className="border-b border-border/50 last:border-0 hover:bg-muted/30 cursor-pointer"
                     >
-                      <td className="px-4 py-3 font-mono font-medium">{item.displayCode}</td>
                       <td className="px-4 py-3 text-muted-foreground">{item.campaignName}</td>
-                      <td className="px-4 py-3 text-muted-foreground">{item.status}</td>
+                      <td className="px-4 py-3 text-right font-medium text-foreground">
+                        {formatCurrency(item.amountCents ?? 0)}
+                      </td>
+                      <td className="px-4 py-3">
+                        <VoucherStatusBadge status={item.status} />
+                      </td>
                       <td className="px-4 py-3 text-muted-foreground">
                         {formatDateTime(item.issuedAt)}
                       </td>
@@ -92,9 +96,12 @@ export function SalesTable({
                   onClick={() => onRowClick(item)}
                   className="w-full px-4 py-3 text-left hover:bg-muted/30 active:bg-muted/50"
                 >
-                  <div className="font-mono font-medium text-foreground">{item.displayCode}</div>
-                  <div className="mt-1 text-xs text-muted-foreground">
-                    {item.campaignName} · {item.status}
+                  <div className="font-medium text-foreground">{item.campaignName}</div>
+                  <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
+                    <span className="font-medium text-foreground">
+                      {formatCurrency(item.amountCents ?? 0)}
+                    </span>
+                    <VoucherStatusBadge status={item.status} />
                   </div>
                   <div className="mt-1 text-xs text-muted-foreground">
                     Emitido: {formatDateTime(item.issuedAt)} · Expira: {formatExpiry(item.expiresAt)}

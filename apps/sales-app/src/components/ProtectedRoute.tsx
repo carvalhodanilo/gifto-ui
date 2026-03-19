@@ -1,16 +1,23 @@
-import { Navigate, useLocation } from 'react-router-dom';
+import * as React from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { AuthLoadingScreen } from './AuthLoadingScreen';
 
 /**
- * Redireciona para /login se o usuário não estiver autenticado.
- * Futuro: considerar token expirado e refresh.
+ * Bloqueia render até o Keycloak inicializar.
  */
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useAuth();
-  const location = useLocation();
+  const { authenticated, loading, login } = useAuth();
+  const didTriggerLogin = React.useRef(false);
 
-  if (!isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+  React.useEffect(() => {
+    if (!loading && !authenticated && !didTriggerLogin.current) {
+      didTriggerLogin.current = true;
+      login();
+    }
+  }, [loading, authenticated, login]);
+
+  if (loading || !authenticated) {
+    return <AuthLoadingScreen />;
   }
 
   return <>{children}</>;

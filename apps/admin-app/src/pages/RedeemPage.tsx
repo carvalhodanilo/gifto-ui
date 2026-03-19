@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { useTenant } from '../contexts/TenantContext';
 import { getVoucherByDisplayCode } from '../api/vouchers';
 import { VoucherSearchForm } from './redeem/VoucherSearchForm';
 import { VoucherResultCard } from './redeem/VoucherResultCard';
@@ -9,7 +8,6 @@ import { formatCurrency } from '../utils/format';
 
 /** Página de resgate: buscar por display code → ver saldo → abrir modal → resgatar. */
 export function RedeemPage() {
-  const { tenant } = useTenant();
   const inputRef = React.useRef<HTMLInputElement>(null);
 
   const [displayCode, setDisplayCode] = React.useState('');
@@ -32,7 +30,7 @@ export function RedeemPage() {
     setSearchError(null);
     setLoading(true);
     try {
-      const data = await getVoucherByDisplayCode(code, tenant?.tenantId);
+      const data = await getVoucherByDisplayCode(code);
       setVoucher(data);
     } catch (err) {
       setSearchError(err instanceof Error ? err.message : 'Voucher não encontrado');
@@ -40,7 +38,7 @@ export function RedeemPage() {
     } finally {
       setLoading(false);
     }
-  }, [displayCode, tenant?.tenantId]);
+  }, [displayCode]);
 
   const handleRedeemClick = () => setModalOpen(true);
 

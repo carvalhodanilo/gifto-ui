@@ -9,7 +9,6 @@ import { NewVoucherDialog } from '../components/sales/NewVoucherDialog';
 import { VoucherDetailsDialog } from '../components/sales/VoucherDetailsDialog';
 import { StatusMessage } from '../components/StatusMessage';
 import type { TenantVoucherItem } from '../types/voucher';
-import type { VoucherListItem } from '../types/voucher';
 
 /**
  * Página de Vendas: central operacional de emissão e acompanhamento de vouchers.
@@ -41,12 +40,9 @@ export function SalesPage() {
   const handleCloseModal = () => setModalOpen(false);
 
   /** Após emissão: atualizar tabela mantendo filtros e página. */
-  const handleIssueSuccess = React.useCallback(
-    (_item?: VoucherListItem) => {
-      refetch();
-    },
-    [refetch]
-  );
+  const handleIssueSuccess = React.useCallback(() => {
+    refetch();
+  }, [refetch]);
 
   const handleRowClick = React.useCallback((item: TenantVoucherItem) => {
     setDetailsVoucher(item);

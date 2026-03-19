@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { formatDateOnly } from '../../utils/format';
 import { CampaignStatusBadge } from './CampaignStatusBadge';
 import type { CampaignListItem } from '../../types/campaign-api';

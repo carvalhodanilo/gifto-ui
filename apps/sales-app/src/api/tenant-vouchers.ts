@@ -1,8 +1,9 @@
 import { apiUrl } from '../config/api';
 import type { TenantVouchersParams, TenantVouchersResponse } from '../types/voucher';
+import { authHeaders } from './authHeaders';
 
 /**
- * Monta query string para GET /tenants/{tenantId}/vouchers.
+ * Monta query string para GET /v1/vouchers/list.
  * Apenas inclui parâmetros definidos.
  */
 function buildQuery(params: TenantVouchersParams): string {
@@ -19,16 +20,18 @@ function buildQuery(params: TenantVouchersParams): string {
 }
 
 /**
- * Lista vouchers do tenant. GET /tenants/{tenantId}/vouchers
- * tenantId deve vir sempre do TenantContext (nunca hardcoded).
+ * Lista vouchers do tenant. GET /v1/vouchers/list
+ * Header obrigatório: tenant (sempre do TenantContext).
  */
 export async function getTenantVouchers(
-  tenantId: string,
+  _tenantId: string,
   params: TenantVouchersParams = {}
 ): Promise<TenantVouchersResponse> {
-  const path = `/tenants/${encodeURIComponent(tenantId)}/vouchers${buildQuery(params)}`;
+  const path = `/v1/vouchers/list${buildQuery(params)}`;
   const url = apiUrl(path);
-  const res = await fetch(url);
+  const res = await fetch(url, {
+    headers: authHeaders(),
+  });
 
   if (!res.ok) {
     const text = await res.text();

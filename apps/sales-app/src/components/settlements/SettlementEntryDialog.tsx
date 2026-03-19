@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { Button } from '@core-ui/ui';
-import { useTenant } from '../../contexts/TenantContext';
 import { markEntryPaid } from '../../api/settlements';
 import { Dialog } from '../sales/Dialog';
 import { StatusMessage } from '../StatusMessage';
@@ -13,6 +12,7 @@ interface SettlementEntryDialogProps {
   onClose: () => void;
   entry: SettlementEntry | null;
   batchId: string | null;
+  tenantId: string | null;
   onPaidSuccess: () => void;
 }
 
@@ -25,11 +25,9 @@ export function SettlementEntryDialog({
   onClose,
   entry,
   batchId,
+  tenantId,
   onPaidSuccess,
 }: SettlementEntryDialogProps) {
-  const { tenant } = useTenant();
-  const tenantId = tenant?.tenantId ?? null;
-
   const [paymentRef, setPaymentRef] = React.useState('');
   const [paidLoading, setPaidLoading] = React.useState(false);
   const [paidError, setPaidError] = React.useState<string | null>(null);
