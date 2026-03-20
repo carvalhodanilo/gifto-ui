@@ -39,6 +39,44 @@ Cada app já tem `.env.development` com o padrão abaixo:
 - `VITE_KEYCLOAK_CLIENT_ID=voucher-platform-sales-web`
 - `VITE_APP_URL=http://localhost:5174`
 
+### Variáveis de ambiente (produção MVP no Lightsail)
+
+Para o `sales-app` em produção, estas variáveis são embutidas no build do Vite.
+Mantenha `VITE_APP_URL` exatamente igual à origem pública usada no browser (protocolo + host + porta, se houver).
+
+```env
+VITE_APP_URL=http://3.239.44.109
+VITE_API_BASE_URL=http://3.239.44.109/api
+VITE_KEYCLOAK_URL=http://3.239.44.109/auth
+VITE_KEYCLOAK_REALM=gifto
+VITE_KEYCLOAK_CLIENT_ID=voucher-platform-sales-web
+```
+
+### Keycloak em produção: redirect URIs (obrigatório)
+
+No Keycloak (client web `voucher-platform-sales-web`), configure:
+
+1. `Valid Redirect URIs`:
+   - `http://3.239.44.109/*`
+2. `Web origins`:
+   - `http://3.239.44.109`
+3. `Valid Post Logout Redirect URIs`:
+   - `http://3.239.44.109/*`
+
+Para evitar falhas por CORS, libere no backend pelo menos a origem do front:
+`http://3.239.44.109`
+
+### Nginx (SPA + rotas do backend)
+
+Para casar o `sales-app` com o backend e o Keycloak no mesmo host, o Nginx deve:
+
+1. Servir o `dist` do `sales-app` na rota `/` com fallback para `index.html` (SPA).
+2. Manter as rotas/proxy existentes para:
+   - `/api/*` (API do backend)
+   - `/auth/*` (Keycloak em PROD)
+
+Use o template em [`deploy/nginx/sales-app-spa.conf`](deploy/nginx/sales-app-spa.conf) e adapte apenas o path onde o build será colocado (ex.: `/var/www/sales-app/dist`).
+
 ### O que configurar no Keycloak local
 
 Para os clients web:
