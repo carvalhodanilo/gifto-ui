@@ -32,6 +32,10 @@ Não existe mais tela/rota própria de login (`/login`).
 
 O `keycloak-js` usa `checkLoginIframe` conforme **`VITE_CHECK_LOGIN_IFRAME`** no build (`true` só com HTTPS — ver abaixo). Por omissão (ou variável ausente) fica `false`, necessário em **HTTP** para evitar o passo *third-party cookies* (`3p-cookies/step1.html`), que usa a Storage Access API e **falha em contexto não seguro** (ecrã infinito em “Autenticando…”).
 
+**PKCE e `http://IP` (não localhost):** o fluxo S256 usa **Web Crypto** (`crypto.subtle`), só disponível em [secure contexts](https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts). Em `http://3.x.x.x` o adaptador usa **`pkceMethod: false`** no init. No Keycloak, no client web, o campo **Proof Key for Code Exchange Code Challenge Method** (ou equivalente na tua versão) não pode **exigir** PKCE para esse client — caso contrário o login falha na página do Keycloak. Com **HTTPS**, o build volta a usar S256 (secure context) e podes reforçar PKCE no client.
+
+Se o init falhar, o `AuthContext` regista o erro em **`console.error('[Auth] Keycloak init failed:', …)`** — não fica silencioso.
+
 ### Variáveis de ambiente (local)
 
 Cada app já tem `.env.development` com o padrão abaixo:

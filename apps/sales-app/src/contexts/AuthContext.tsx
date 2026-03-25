@@ -150,8 +150,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           logout,
         }));
       })
-      .catch(() => {
+      .catch((err) => {
         if (cancelled) return;
+        console.error('[Auth] Keycloak init failed:', err);
         setState((prev) => ({ ...prev, loading: false, authenticated: false, login, logout }));
       });
 
