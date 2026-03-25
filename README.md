@@ -39,32 +39,39 @@ Cada app já tem `.env.development` com o padrão abaixo:
 - `VITE_KEYCLOAK_CLIENT_ID=voucher-platform-sales-web`
 - `VITE_APP_URL=http://localhost:5174`
 
-### Variáveis de ambiente (produção MVP no Lightsail)
+### Variáveis de ambiente (produção)
 
-Para o `sales-app` em produção, estas variáveis são embutidas no build do Vite.
-Mantenha `VITE_APP_URL` exatamente igual à origem pública usada no browser (protocolo + host + porta, se houver).
+O Vite só embute `VITE_*` **no momento do `npm run build`**. Cada ambiente (VM, CI) precisa do ficheiro certo **antes** do build.
 
-```env
-VITE_APP_URL=http://3.239.44.109
-VITE_API_BASE_URL=http://3.239.44.109/api
-VITE_KEYCLOAK_URL=http://3.239.44.109/auth
-VITE_KEYCLOAK_REALM=gifto
-VITE_KEYCLOAK_CLIENT_ID=voucher-platform-sales-web
+**Fluxo recomendado**
+
+1. Versionado no Git: [`apps/sales-app/.env.production.example`](apps/sales-app/.env.production.example) (template com `SEU_IP_OU_DOMINIO`).
+2. **Não** versionar: `apps/sales-app/.env.production` (está no [`.gitignore`](.gitignore)) — copie o template e preencha no servidor ou na máquina de build:
+
+```bash
+cp apps/sales-app/.env.production.example apps/sales-app/.env.production
+# Edite SEU_IP_OU_DOMINIO para o IP ou domínio público (mesma origem do browser).
 ```
+
+3. Build:
+
+```bash
+npm run build:sales
+```
+
+**Por que o `.env.production` “não veio” no `git clone`?** Porque o ficheiro real **não deve** ir no repositório (cada deploy tem IP/domínio diferentes). O que vem no clone é o **`.env.production.example`**.
+
+**Alternativa (CI):** exportar as mesmas variáveis `VITE_*` no pipeline antes do `npm run build` — não precisa de ficheiro.
 
 ### Keycloak em produção: redirect URIs (obrigatório)
 
-No Keycloak (client web `voucher-platform-sales-web`), configure:
+No Keycloak (client web `voucher-platform-sales-web`), use a **mesma origem** que está em `VITE_APP_URL` (ex.: `http://SEU_IP` na porta 80, sem `:80` na URL):
 
-1. `Valid Redirect URIs`:
-   - `http://3.239.44.109/*`
-2. `Web origins`:
-   - `http://3.239.44.109`
-3. `Valid Post Logout Redirect URIs`:
-   - `http://3.239.44.109/*`
+1. `Valid Redirect URIs`: `http://SEU_IP/*`
+2. `Web origins`: `http://SEU_IP`
+3. `Valid Post Logout Redirect URIs`: `http://SEU_IP/*`
 
-Para evitar falhas por CORS, libere no backend pelo menos a origem do front:
-`http://3.239.44.109`
+Para evitar falhas por CORS, libere no backend a origem do front (a mesma de `VITE_APP_URL`).
 
 ### Nginx (SPA + rotas do backend)
 
