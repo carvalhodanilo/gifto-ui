@@ -32,7 +32,12 @@ Não existe mais tela/rota própria de login (`/login`).
 
 O `keycloak-js` usa `checkLoginIframe` conforme **`VITE_CHECK_LOGIN_IFRAME`** no build (`true` só com HTTPS — ver abaixo). Por omissão (ou variável ausente) fica `false`, necessário em **HTTP** para evitar o passo *third-party cookies* (`3p-cookies/step1.html`), que usa a Storage Access API e **falha em contexto não seguro** (ecrã infinito em “Autenticando…”).
 
-**PKCE e `http://IP` (não localhost):** o fluxo S256 usa **Web Crypto** (`crypto.subtle`), só disponível em [secure contexts](https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts). Em `http://3.x.x.x` o adaptador usa **`pkceMethod: false`** no init. No Keycloak, no client web, o campo **Proof Key for Code Exchange Code Challenge Method** (ou equivalente na tua versão) não pode **exigir** PKCE para esse client — caso contrário o login falha na página do Keycloak. Com **HTTPS**, o build volta a usar S256 (secure context) e podes reforçar PKCE no client.
+**`http://IP` (não localhost):** em contexto não seguro o browser **não** expõe `crypto.subtle` (PKCE S256) nem, em muitos casos, **`crypto.randomUUID()`** — o `keycloak-js` precisa dos dois no fluxo de login. Este projeto faz o seguinte:
+
+1. **`pkceMethod: false`** no init quando `!globalThis.isSecureContext` (ver [`keycloakClient.ts`](apps/sales-app/src/auth/keycloakClient.ts)).
+2. **Polyfill** de `randomUUID` com `getRandomValues` quando falta, carregado **antes** do Keycloak em [`main.tsx`](apps/sales-app/src/main.tsx) → [`polyfill-insecure-context-crypto.ts`](apps/sales-app/src/polyfill-insecure-context-crypto.ts).
+
+No Keycloak, no client web, o **PKCE não pode ser obrigatório** enquanto usares HTTP sem `code_challenge`. Com **HTTPS**, o polyfill deixa de ser necessário para o UUID (o browser nativo serve) e o código volta a **S256**.
 
 Se o init falhar, o `AuthContext` regista o erro em **`console.error('[Auth] Keycloak init failed:', …)`** — não fica silencioso.
 
