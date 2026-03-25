@@ -17,9 +17,14 @@ function getKeycloak(): Keycloak {
 export async function initKeycloak(): Promise<Keycloak> {
   if (initPromise) return initPromise;
 
+  const checkLoginIframe = import.meta.env.VITE_CHECK_LOGIN_IFRAME === 'true';
+
   initPromise = getKeycloak().init({
     onLoad: 'login-required',
     pkceMethod: 'S256',
+    // HTTP: manter false (ou omitir VITE_CHECK_LOGIN_IFRAME) — o passo 3p-cookies usa Storage
+    // Access API e falha em contexto não seguro. HTTPS: definir VITE_CHECK_LOGIN_IFRAME=true no build.
+    checkLoginIframe,
   }).then(() => getKeycloak());
 
   return initPromise;
