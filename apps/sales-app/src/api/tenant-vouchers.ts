@@ -1,6 +1,7 @@
 import { apiUrl } from '../config/api';
 import type { TenantVouchersParams, TenantVouchersResponse } from '../types/voucher';
 import { authHeaders } from './authHeaders';
+import { authFetch } from './authFetch';
 
 /**
  * Monta query string para GET /v1/vouchers/list.
@@ -29,7 +30,7 @@ export async function getTenantVouchers(
 ): Promise<TenantVouchersResponse> {
   const path = `/v1/vouchers/list${buildQuery(params)}`;
   const url = apiUrl(path);
-  const res = await fetch(url, {
+  const res = await authFetch(url, {
     headers: authHeaders(),
   });
 

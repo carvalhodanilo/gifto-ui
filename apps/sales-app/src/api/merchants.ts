@@ -9,6 +9,7 @@ import type {
   UpdateBankAccountPayload,
 } from '../types/merchant-api';
 import { authHeaders } from './authHeaders';
+import { authFetch } from './authFetch';
 
 /**
  * Monta query string para listagem de merchants (page, perPage, terms, status).
@@ -32,7 +33,7 @@ export async function getMerchants(
   params: MerchantsListParams = {}
 ): Promise<MerchantsListResponse> {
   const url = apiUrl('/merchants') + buildMerchantsQuery(params);
-  const res = await fetch(url, {
+  const res = await authFetch(url, {
     headers: authHeaders(),
   });
   if (!res.ok) {
@@ -51,7 +52,7 @@ export async function getMerchantById(
   merchantId: string
 ): Promise<MerchantDetail> {
   const url = apiUrl(`/merchants/${encodeURIComponent(merchantId)}`);
-  const res = await fetch(url, {
+  const res = await authFetch(url, {
     headers: authHeaders(),
   });
   if (!res.ok) {
@@ -70,7 +71,7 @@ export async function createMerchant(
   payload: CreateMerchantPayload
 ): Promise<MerchantDetail> {
   const url = apiUrl('/merchants');
-  const res = await fetch(url, {
+  const res = await authFetch(url, {
     method: 'POST',
     headers: authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify(payload),
@@ -92,7 +93,7 @@ export async function updateMerchant(
   payload: UpdateMerchantPayload
 ): Promise<MerchantDetail> {
   const url = apiUrl(`/merchants/${encodeURIComponent(merchantId)}`);
-  const res = await fetch(url, {
+  const res = await authFetch(url, {
     method: 'PUT',
     headers: authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify(payload),
@@ -113,7 +114,7 @@ export async function getMerchantBankAccount(
   merchantId: string
 ): Promise<MerchantBankAccount> {
   const url = apiUrl(`/merchants/${encodeURIComponent(merchantId)}/bank-account`);
-  const res = await fetch(url, {
+  const res = await authFetch(url, {
     headers: authHeaders(),
   });
   if (!res.ok) {
@@ -149,7 +150,7 @@ export async function updateMerchantBankAccount(
   payload: UpdateBankAccountPayload
 ): Promise<{ merchantId: string; tenantId: string }> {
   const url = apiUrl(`/merchants/${encodeURIComponent(merchantId)}/bank-account`);
-  const res = await fetch(url, {
+  const res = await authFetch(url, {
     method: 'PUT',
     headers: authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify(payload),
@@ -170,7 +171,7 @@ export async function activateMerchant(
   merchantId: string
 ): Promise<void> {
   const url = apiUrl(`/merchants/${encodeURIComponent(merchantId)}/activate`);
-  const res = await fetch(url, {
+  const res = await authFetch(url, {
     method: 'POST',
     headers: authHeaders(),
   });
@@ -189,7 +190,7 @@ export async function suspendMerchant(
   merchantId: string
 ): Promise<void> {
   const url = apiUrl(`/merchants/${encodeURIComponent(merchantId)}/suspend`);
-  const res = await fetch(url, {
+  const res = await authFetch(url, {
     method: 'POST',
     headers: authHeaders(),
   });

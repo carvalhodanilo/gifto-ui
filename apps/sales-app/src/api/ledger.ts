@@ -7,6 +7,7 @@ import type {
 } from '../types/ledger';
 import { authHeaders } from './authHeaders';
 import { withIdempotencyKey } from '../utils/idempotency';
+import { authFetch } from './authFetch';
 
 /**
  * Monta query string a partir dos params (search, page, perPage, sort, dir).
@@ -36,7 +37,7 @@ export async function getLedgerEntries(
   void _tenantId;
   void _merchantId;
   const url = apiUrl('v1/vouchers/ledger-entries') + buildQueryString(params);
-  const res = await fetch(url, {
+  const res = await authFetch(url, {
     headers: authHeaders(),
   });
   if (!res.ok) {
@@ -54,7 +55,7 @@ export async function getLedgerEntries(
 export async function postReversal(payload: ReversalPayload): Promise<ReversalResult> {
   const { idempotencyKey, ...body } = payload;
   const url = apiUrl('v1/vouchers/reversal');
-  const res = await fetch(url, {
+  const res = await authFetch(url, {
     method: 'POST',
     headers: authHeaders(withIdempotencyKey({ 'Content-Type': 'application/json' }, idempotencyKey)),
     body: JSON.stringify({ ...body, idempotencyKey }),

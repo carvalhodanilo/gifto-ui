@@ -6,6 +6,7 @@ import type {
 } from '../types/campaign-api';
 import type { Campaign } from '../types/voucher';
 import { authHeaders } from './authHeaders';
+import { authFetch } from './authFetch';
 
 /**
  * Lista de campanhas do tenant para o seletor no modal de vendas.
@@ -14,7 +15,7 @@ import { authHeaders } from './authHeaders';
 export async function getCampaigns(_tenantId: string): Promise<Campaign[]> {
   // Tenant é resolvido via claims do token; mantemos o parâmetro por compatibilidade interna.
   void _tenantId;
-  const res = await fetch(apiUrl('/campaigns'), { headers: authHeaders() });
+  const res = await authFetch(apiUrl('/campaigns'), { headers: authHeaders() });
 
   if (!res.ok) {
     const text = await res.text();
@@ -34,7 +35,7 @@ export async function getAllCampaigns(_tenantId: string): Promise<GetAllByTenant
   // Tenant é resolvido via claims do token; mantemos o parâmetro por compatibilidade interna.
   void _tenantId;
   const url = apiUrl('/campaigns/all');
-  const res = await fetch(url, {
+  const res = await authFetch(url, {
     headers: authHeaders(),
   });
 
@@ -63,7 +64,7 @@ export async function createCampaign(
   body: CreateCampaignRequest
 ): Promise<void> {
   const url = apiUrl('/campaigns');
-  const res = await fetch(url, {
+  const res = await authFetch(url, {
     method: 'POST',
     headers: authHeaders({
       'Content-Type': 'application/json',
@@ -94,7 +95,7 @@ export async function updateCampaign(
   body: CreateCampaignRequest
 ): Promise<void> {
   const url = apiUrl(`/campaigns/${encodeURIComponent(campaignId)}/update`);
-  const res = await fetch(url, {
+  const res = await authFetch(url, {
     method: 'PUT',
     headers: authHeaders({
       'Content-Type': 'application/json',
@@ -124,7 +125,7 @@ export async function activateCampaign(
   campaignId: string
 ): Promise<void> {
   const url = apiUrl(`/campaigns/${encodeURIComponent(campaignId)}/activate`);
-  const res = await fetch(url, {
+  const res = await authFetch(url, {
     method: 'PATCH',
     headers: authHeaders(),
   });
@@ -151,7 +152,7 @@ export async function pauseCampaign(
   campaignId: string
 ): Promise<void> {
   const url = apiUrl(`/campaigns/${encodeURIComponent(campaignId)}/pause`);
-  const res = await fetch(url, {
+  const res = await authFetch(url, {
     method: 'PATCH',
     headers: authHeaders(),
   });
@@ -178,7 +179,7 @@ export async function suspendCampaign(
   campaignId: string
 ): Promise<void> {
   const url = apiUrl(`/campaigns/${encodeURIComponent(campaignId)}/suspend`);
-  const res = await fetch(url, {
+  const res = await authFetch(url, {
     method: 'PATCH',
     headers: authHeaders(),
   });

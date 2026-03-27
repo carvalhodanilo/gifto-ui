@@ -12,6 +12,7 @@
 
 import type { TenantResolveResponse } from '../types/tenant';
 import { authHeaders } from './authHeaders';
+import { authFetch } from './authFetch';
 
 export class TenantNotFoundError extends Error {
   constructor(
@@ -54,7 +55,7 @@ export async function resolveTenant(slug: string): Promise<TenantResolveResponse
     const url = base
       ? `${base}/public/shoppings/resolve?slug=${encodeURIComponent(slug)}`
       : `/api/public/shoppings/resolve?slug=${encodeURIComponent(slug)}`;
-    const res = await fetch(url, { headers: authHeaders() });
+    const res = await authFetch(url, { headers: authHeaders() });
 
     if (res.status === 404) {
       throw new TenantNotFoundError('Tenant não encontrado', 404);

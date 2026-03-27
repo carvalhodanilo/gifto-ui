@@ -5,6 +5,7 @@ import type {
   MarkEntryPaidResponse,
 } from '../types/settlement-api';
 import { authHeaders } from './authHeaders';
+import { authFetch } from './authFetch';
 
 function parseErrorResponse(text: string): string {
   try {
@@ -22,7 +23,7 @@ function parseErrorResponse(text: string): string {
  */
 export async function runSettlementBatch(tenantId: string): Promise<RunBatchResponse> {
   const url = apiUrl('/v1/settlements/batch/run');
-  const res = await fetch(url, {
+  const res = await authFetch(url, {
     method: 'POST',
     headers: authHeaders({ tenant: tenantId }),
   });
@@ -44,7 +45,7 @@ export async function getSettlementBatch(
   periodKey: string
 ): Promise<SettlementBatchResponse | null> {
   const url = apiUrl(`/v1/settlements/batch/${encodeURIComponent(periodKey)}`);
-  const res = await fetch(url, {
+  const res = await authFetch(url, {
     headers: authHeaders({ tenant: tenantId }),
   });
 
@@ -73,7 +74,7 @@ export async function markEntryPaid(
   const url = apiUrl(
     `/v1/settlements/batch/${encodeURIComponent(batchId)}/entries/${encodeURIComponent(entryId)}/paid`
   );
-  const res = await fetch(url, {
+  const res = await authFetch(url, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',

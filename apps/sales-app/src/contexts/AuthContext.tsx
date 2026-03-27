@@ -1,6 +1,11 @@
 import * as React from 'react';
 import { useTenant } from './TenantContext';
-import { initKeycloak, getKeycloakInstance, logoutUrlRedirectUri } from '../auth/keycloakClient';
+import {
+  initKeycloak,
+  getKeycloakInstance,
+  logoutUrlRedirectUri,
+  ensureFreshToken,
+} from '../auth/keycloakClient';
 
 export type TokenParsed = unknown;
 
@@ -149,6 +154,46 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           login,
           logout,
         }));
+
+        kc.onAuthRefreshSuccess = () => {
+          if (cancelled) return;
+          const refreshedTp = kc.tokenParsed;
+          const refreshedTpRecord = toTokenParsedRecord(refreshedTp);
+          const refreshedUsername = asString(refreshedTpRecord?.preferred_username);
+          const refreshedEmail = asString(refreshedTpRecord?.email);
+          const refreshedRoles = parseRoles(refreshedTp);
+          const { tenantId: refreshedTenantId, merchantId: refreshedMerchantId } =
+            applyClaimsToContexts(refreshedTp);
+
+          setState((prev) => ({
+            ...prev,
+            authenticated: kc.authenticated ?? false,
+            token: kc.token ?? null,
+            tokenParsed: refreshedTp ?? null,
+            username: refreshedUsername,
+            email: refreshedEmail,
+            roles: refreshedRoles,
+            tenantId: refreshedTenantId,
+            merchantId: refreshedMerchantId,
+          }));
+        };
+
+        kc.onAuthLogout = () => {
+          if (cancelled) return;
+          setState((prev) => ({
+            ...prev,
+            authenticated: false,
+            token: null,
+            tokenParsed: null,
+            roles: [],
+            tenantId: null,
+            merchantId: null,
+          }));
+        };
+
+        kc.onTokenExpired = () => {
+          void ensureFreshToken(0);
+        };
       })
       .catch((err) => {
         if (cancelled) return;

@@ -3,6 +3,8 @@ import { keycloakConfig } from '../config/keycloak';
 
 let keycloakInstance: Keycloak | null = null;
 let initPromise: Promise<Keycloak> | null = null;
+let refreshPromise: Promise<boolean> | null = null;
+let refreshIntervalId: number | null = null;
 
 function getKeycloak(): Keycloak {
   if (keycloakInstance) return keycloakInstance;
@@ -12,6 +14,21 @@ function getKeycloak(): Keycloak {
     clientId: keycloakConfig.clientId,
   });
   return keycloakInstance;
+}
+
+function startAutoRefresh(kc: Keycloak): void {
+  if (typeof window === 'undefined' || refreshIntervalId !== null) return;
+  refreshIntervalId = window.setInterval(() => {
+    void ensureFreshToken(60).catch(() => {
+      // Erros de rede/refresh não devem quebrar o app em background.
+    });
+  }, 30_000);
+
+  kc.onTokenExpired = () => {
+    void ensureFreshToken(0).catch(() => {
+      // Se o refresh falhar, o próximo 401/reload fará novo login.
+    });
+  };
 }
 
 export async function initKeycloak(): Promise<Keycloak> {
@@ -28,9 +45,29 @@ export async function initKeycloak(): Promise<Keycloak> {
     // HTTP: manter false (ou omitir VITE_CHECK_LOGIN_IFRAME) — o passo 3p-cookies usa Storage
     // Access API e falha em contexto não seguro. HTTPS: definir VITE_CHECK_LOGIN_IFRAME=true no build.
     checkLoginIframe,
-  }).then(() => getKeycloak());
+  }).then(() => {
+    const kc = getKeycloak();
+    startAutoRefresh(kc);
+    return kc;
+  });
 
   return initPromise;
+}
+
+export async function ensureFreshToken(minValiditySeconds = 60): Promise<boolean> {
+  const kc = getKeycloakInstance();
+  if (!kc || !kc.authenticated) return false;
+
+  if (refreshPromise) return refreshPromise;
+
+  refreshPromise = kc
+    .updateToken(minValiditySeconds)
+    .catch(() => false)
+    .finally(() => {
+      refreshPromise = null;
+    });
+
+  return refreshPromise;
 }
 
 export function getAccessToken(): string | null {

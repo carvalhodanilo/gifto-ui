@@ -1,6 +1,7 @@
 import { apiUrl } from '../config/api';
 import type { IssueVoucherRequest, IssueVoucherResponse } from '../types/voucher';
 import { authHeaders } from './authHeaders';
+import { authFetch } from './authFetch';
 
 function generateIdempotencyKey(): string {
   return crypto.randomUUID();
@@ -17,7 +18,7 @@ export async function issueVoucher(
   const url = apiUrl('/v1/vouchers/issue');
   const idempotencyKey = generateIdempotencyKey();
 
-  const res = await fetch(url, {
+  const res = await authFetch(url, {
     method: 'POST',
     headers: authHeaders({
       'Content-Type': 'application/json',
