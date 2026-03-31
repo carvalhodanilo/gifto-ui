@@ -15,6 +15,9 @@ import { MerchantsPage } from './pages/MerchantsPage';
 import { MerchantDetailPage } from './pages/MerchantDetailPage';
 import { RedeemPage } from './pages/RedeemPage';
 import { HistoryPage } from './pages/HistoryPage';
+import { SystemAdminTenantsPage } from './pages/admin/SystemAdminTenantsPage';
+import { SystemAdminTenantDetailPage } from './pages/admin/SystemAdminTenantDetailPage';
+import { SystemAdminTenantMerchantsPage } from './pages/admin/SystemAdminTenantMerchantsPage';
 
 /**
  * Rotas após resolução do tenant: login (público) e rotas autenticadas (dashboard, vendas).
@@ -61,6 +64,30 @@ function AuthenticatedRoutes() {
           element={
             <RoleGuard allowedRoles={['system_admin']}>
               <SettlementPage />
+            </RoleGuard>
+          }
+        />
+        <Route
+          path="admin/tenants"
+          element={
+            <RoleGuard allowedRoles={['system_admin']}>
+              <SystemAdminTenantsPage />
+            </RoleGuard>
+          }
+        />
+        <Route
+          path="admin/tenants/:tenantId"
+          element={
+            <RoleGuard allowedRoles={['system_admin']}>
+              <SystemAdminTenantDetailPage />
+            </RoleGuard>
+          }
+        />
+        <Route
+          path="admin/tenants/:tenantId/merchants"
+          element={
+            <RoleGuard allowedRoles={['system_admin']}>
+              <SystemAdminTenantMerchantsPage />
             </RoleGuard>
           }
         />
