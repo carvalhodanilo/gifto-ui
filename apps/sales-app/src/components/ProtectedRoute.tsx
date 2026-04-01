@@ -6,7 +6,7 @@ import { AuthLoadingScreen } from './AuthLoadingScreen';
  * Bloqueia render até o Keycloak inicializar.
  */
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { authenticated, loading, login } = useAuth();
+  const { authenticated, loading, loggingOut, login } = useAuth();
   const didTriggerLogin = React.useRef(false);
   const oidcError = React.useMemo(() => {
     if (typeof window === 'undefined') return null;
@@ -52,7 +52,7 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
         </div>
       );
     }
-    return <AuthLoadingScreen />;
+    return <AuthLoadingScreen label={loggingOut ? 'Saindo...' : 'Autenticando...'} />;
   }
 
   return <>{children}</>;

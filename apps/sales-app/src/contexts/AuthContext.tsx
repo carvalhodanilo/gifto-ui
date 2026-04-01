@@ -11,6 +11,8 @@ export type TokenParsed = unknown;
 
 export interface AuthState {
   authenticated: boolean;
+  /** True entre o clique em sair e o redirect do Keycloak (evita mostrar "Autenticando..."). */
+  loggingOut: boolean;
   loading: boolean;
   token: string | null;
   tokenParsed: TokenParsed | null;
@@ -76,6 +78,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const [state, setState] = React.useState<AuthState>({
     authenticated: false,
+    loggingOut: false,
     loading: true,
     token: null,
     tokenParsed: null,
@@ -117,15 +120,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const logout = React.useCallback(() => {
+    const resetLoggingOut = () =>
+      setState((prev) => (prev.loggingOut ? { ...prev, loggingOut: false } : prev));
+
+    setState((prev) => ({ ...prev, loggingOut: true }));
+
     const kc = getKeycloakInstance();
     const redirectUri = logoutUrlRedirectUri();
     if (kc) {
-      kc.logout({ redirectUri }).catch(() => {});
+      kc.logout({ redirectUri }).catch(resetLoggingOut);
       return;
     }
     initKeycloak()
       .then((instance) => instance.logout({ redirectUri }))
-      .catch(() => {});
+      .catch(resetLoggingOut);
   }, []);
 
   React.useEffect(() => {
@@ -143,6 +151,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setState((prev) => ({
           ...prev,
           authenticated: kc.authenticated ?? false,
+          loggingOut: false,
           loading: false,
           token: kc.token ?? null,
           tokenParsed: tp ?? null,
@@ -183,6 +192,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setState((prev) => ({
             ...prev,
             authenticated: false,
+            loggingOut: true,
             token: null,
             tokenParsed: null,
             roles: [],
@@ -198,7 +208,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .catch((err) => {
         if (cancelled) return;
         console.error('[Auth] Keycloak init failed:', err);
-        setState((prev) => ({ ...prev, loading: false, authenticated: false, login, logout }));
+        setState((prev) => ({
+          ...prev,
+          loading: false,
+          authenticated: false,
+          loggingOut: false,
+          login,
+          logout,
+        }));
       });
 
     return () => {
