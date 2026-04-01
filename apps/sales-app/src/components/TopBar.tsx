@@ -12,8 +12,9 @@ export function TopBar() {
   const { username, email, logout } = useAuth();
 
   const handleLogout = () => {
-    resetTenant();
+    // Dispara primeiro o fluxo Keycloak (marca “Saindo…”); reset do tenant é só estado local.
     logout();
+    resetTenant();
   };
 
   return (

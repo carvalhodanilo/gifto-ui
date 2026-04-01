@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { isLogoutLandingPending } from '../auth/keycloakClient';
 import { AuthLoadingScreen } from './AuthLoadingScreen';
 
 /**
@@ -52,7 +53,11 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
         </div>
       );
     }
-    return <AuthLoadingScreen label={loggingOut ? 'Saindo...' : 'Autenticando...'} />;
+    const leaving =
+      loggingOut || (loading && isLogoutLandingPending());
+    return (
+      <AuthLoadingScreen label={leaving ? 'Saindo...' : 'Autenticando...'} />
+    );
   }
 
   return <>{children}</>;

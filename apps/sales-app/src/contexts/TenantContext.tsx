@@ -28,8 +28,6 @@ const defaultState: TenantState = {
 
 const TenantContext = React.createContext<TenantState>(defaultState);
 
-const MOCK_LOADING_MS = 400;
-
 export function TenantProvider({ children }: { children: React.ReactNode }) {
   const [initialTenant] = React.useState(() => getMockTenantConfig());
   const [tenant, setTenant] = React.useState<Tenant | null>(null);
@@ -40,7 +38,8 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
   const resolve = React.useCallback(async () => {
     setStatus('loading');
     setError(null);
-    await new Promise((r) => setTimeout(r, MOCK_LOADING_MS));
+    // Tenant vem do mock local — sem `setTimeout` artificial (400 ms antes), que deixava
+    // logout/reload perceptivelmente “travados”. Com fetch real, o loading cobre a rede.
     // Não sobrescreve tenantId vindo do token (AuthContext pode ter setado antes).
     setTenant((prev) => prev ?? { ...initialTenant });
     setStatus('success');

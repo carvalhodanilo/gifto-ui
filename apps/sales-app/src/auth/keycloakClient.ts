@@ -86,3 +86,30 @@ export function logoutUrlRedirectUri(): string {
   return keycloakConfig.appUrl;
 }
 
+const LOGOUT_LANDING_KEY = 'vp-sales-logout-landing';
+
+/** Marca retorno pós-logout para a UI mostrar “Saindo…” em vez de “Autenticando…” durante o init. */
+export function markLogoutLanding(): void {
+  try {
+    sessionStorage.setItem(LOGOUT_LANDING_KEY, '1');
+  } catch {
+    /* modo privado / storage indisponível */
+  }
+}
+
+export function clearLogoutLanding(): void {
+  try {
+    sessionStorage.removeItem(LOGOUT_LANDING_KEY);
+  } catch {
+    /* */
+  }
+}
+
+export function isLogoutLandingPending(): boolean {
+  try {
+    return sessionStorage.getItem(LOGOUT_LANDING_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+

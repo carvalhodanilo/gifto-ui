@@ -5,6 +5,8 @@ import {
   getKeycloakInstance,
   logoutUrlRedirectUri,
   ensureFreshToken,
+  markLogoutLanding,
+  clearLogoutLanding,
 } from '../auth/keycloakClient';
 
 export type TokenParsed = unknown;
@@ -107,6 +109,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [tenant?.name, setTenantFromLogin]
   );
 
+  const applyClaimsRef = React.useRef(applyClaimsToContexts);
+  React.useEffect(() => {
+    applyClaimsRef.current = applyClaimsToContexts;
+  }, [applyClaimsToContexts]);
+
   const login = React.useCallback(() => {
     const kc = getKeycloakInstance();
     const redirectUri = window.location.href;
@@ -123,6 +130,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const resetLoggingOut = () =>
       setState((prev) => (prev.loggingOut ? { ...prev, loggingOut: false } : prev));
 
+    markLogoutLanding();
     setState((prev) => ({ ...prev, loggingOut: true }));
 
     const kc = getKeycloakInstance();
@@ -146,12 +154,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const username = asString(tpRecord?.preferred_username);
         const email = asString(tpRecord?.email);
         const roles = parseRoles(tp);
-        const { tenantId, merchantId } = applyClaimsToContexts(tp);
+        const { tenantId, merchantId } = applyClaimsRef.current(tp);
 
         setState((prev) => ({
           ...prev,
           authenticated: kc.authenticated ?? false,
-          loggingOut: false,
+          loggingOut: (kc.authenticated ?? false) ? false : prev.loggingOut,
           loading: false,
           token: kc.token ?? null,
           tokenParsed: tp ?? null,
@@ -172,11 +180,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const refreshedEmail = asString(refreshedTpRecord?.email);
           const refreshedRoles = parseRoles(refreshedTp);
           const { tenantId: refreshedTenantId, merchantId: refreshedMerchantId } =
-            applyClaimsToContexts(refreshedTp);
+            applyClaimsRef.current(refreshedTp);
 
           setState((prev) => ({
             ...prev,
             authenticated: kc.authenticated ?? false,
+            loggingOut: (kc.authenticated ?? false) ? false : prev.loggingOut,
             token: kc.token ?? null,
             tokenParsed: refreshedTp ?? null,
             username: refreshedUsername,
@@ -204,6 +213,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         kc.onTokenExpired = () => {
           void ensureFreshToken(0);
         };
+
+        clearLogoutLanding();
       })
       .catch((err) => {
         if (cancelled) return;
@@ -216,12 +227,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           login,
           logout,
         }));
+        clearLogoutLanding();
       });
 
     return () => {
       cancelled = true;
     };
-  }, [applyClaimsToContexts, login, logout]);
+  }, [login, logout]);
 
   return <AuthContext.Provider value={state}>{children}</AuthContext.Provider>;
 }
