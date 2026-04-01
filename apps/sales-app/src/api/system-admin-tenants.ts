@@ -4,6 +4,7 @@ import { authHeaders } from './authHeaders';
 import type {
   SystemAdminTenantsPagedResponse,
   SystemAdminTenantDetail,
+  CreateTenantPayload,
   UpdateTenantPayload,
 } from '../types/system-admin-tenant-api';
 import type { MerchantsListResponse } from '../types/merchant-api';
@@ -61,6 +62,24 @@ export async function updateTenant(
   if (!res.ok) {
     const text = await res.text();
     throw new Error(text || `Erro ao atualizar tenant: ${res.status}`);
+  }
+  return res.json();
+}
+
+/**
+ * System_ADMIN: cria tenant.
+ * POST /tenants
+ */
+export async function createTenant(payload: CreateTenantPayload): Promise<{ tenantId: string } | unknown> {
+  const url = apiUrl('/tenants');
+  const res = await authFetch(url, {
+    method: 'POST',
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || `Erro ao criar tenant: ${res.status}`);
   }
   return res.json();
 }

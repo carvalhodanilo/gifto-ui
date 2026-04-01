@@ -25,6 +25,15 @@ export interface SystemAdminTenantDetail {
   status: string;
 }
 
+export interface CreateTenantPayload {
+  name: string;
+  fantasyName?: string | null;
+  document: string;
+  phone1?: string | null;
+  email: string;
+  url: string;
+}
+
 export interface UpdateTenantPayload {
   name: string;
   fantasyName?: string | null;

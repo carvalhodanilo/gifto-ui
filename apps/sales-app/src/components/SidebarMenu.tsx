@@ -13,6 +13,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useSidebarCollapse } from '../contexts/SidebarCollapseContext';
 
 export interface SidebarMenuItem {
   to: string;
@@ -56,6 +57,7 @@ interface SidebarMenuProps {
  */
 export function SidebarMenu({ items = defaultItems, className }: SidebarMenuProps) {
   const { roles } = useAuth();
+  const { collapsed } = useSidebarCollapse();
 
   const visibleItems = React.useMemo(() => {
     return items.filter((item) => {
@@ -65,8 +67,15 @@ export function SidebarMenu({ items = defaultItems, className }: SidebarMenuProp
   }, [items, roles]);
 
   return (
-    <aside className={cn('w-52 shrink-0 bg-card/50 p-3', className)}>
-      <nav className="flex flex-col gap-0.5">
+    <aside
+      className={cn(
+        // Desktop mantém layout atual; no mobile, recolhida = compacta (ícones).
+        collapsed ? 'w-14 p-2' : 'w-52 p-3',
+        'shrink-0 bg-card/50 transition-[width,padding] duration-200',
+        className
+      )}
+    >
+      <nav className={cn('flex flex-col gap-0.5', collapsed && 'items-stretch')}>
         {visibleItems.map(({ to, label, icon: Icon, end }) => (
           <NavLink
             key={to}
@@ -74,15 +83,16 @@ export function SidebarMenu({ items = defaultItems, className }: SidebarMenuProp
             end={end}
             className={({ isActive }) =>
               cn(
-                'flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                'flex items-center rounded-lg py-2.5 text-sm font-medium transition-colors',
+                collapsed ? 'justify-center px-2' : 'gap-2 px-3',
                 isActive
                   ? 'bg-[var(--brand-primary)]/10 text-[var(--brand-primary)]'
                   : 'text-muted-foreground hover:bg-muted/80 hover:text-foreground'
               )
             }
           >
-            <Icon className="h-4 w-4" />
-            {label}
+            <Icon className={cn(collapsed ? 'h-5 w-5' : 'h-4 w-4')} />
+            <span className={cn(collapsed ? 'sr-only' : 'inline')}>{label}</span>
           </NavLink>
         ))}
       </nav>

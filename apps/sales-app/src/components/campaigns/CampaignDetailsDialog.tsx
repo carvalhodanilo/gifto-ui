@@ -5,6 +5,7 @@ import { updateCampaign, activateCampaign, pauseCampaign } from '../../api/campa
 import { Dialog } from '../sales/Dialog';
 import { ConfirmDialog } from '../ConfirmDialog';
 import { StatusMessage } from '../StatusMessage';
+import { ImageUploadField } from '../forms/ImageUploadField';
 import { campaignInputClass, isoToDateInputValue } from './campaignFormStyles';
 import { CampaignStatusBadge } from './CampaignStatusBadge';
 import { formatDateOnly } from '../../utils/format';
@@ -51,6 +52,8 @@ export function CampaignDetailsDialog({
   const [actionLoading, setActionLoading] = React.useState(false);
   const [actionError, setActionError] = React.useState<string | null>(null);
   const [confirm, setConfirm] = React.useState<ConfirmAction | null>(null);
+  /** Banner da landing — estado local; PUT /campaigns ainda não envia arquivo. */
+  const [bannerFile, setBannerFile] = React.useState<File | null>(null);
 
   React.useEffect(() => {
     if (campaign) {
@@ -60,6 +63,7 @@ export function CampaignDetailsDialog({
       setEndsAt(isoToDateInputValue(campaign.endsAt));
       setSaveError(null);
       setActionError(null);
+      setBannerFile(null);
     }
   }, [campaign]);
 
@@ -99,6 +103,7 @@ export function CampaignDetailsDialog({
     setSaveLoading(true);
     setSaveError(null);
     try {
+      void bannerFile;
       await updateCampaign(tenantId, campaign.id, {
         name: name.trim(),
         expirationDays,
@@ -220,6 +225,15 @@ export function CampaignDetailsDialog({
                 <p className="mt-1 text-sm text-foreground">{formatDateOnly(campaign.endsAt)}</p>
               )}
             </div>
+
+            <ImageUploadField
+              variant="campaignBanner"
+              id="campaign-detail-banner"
+              label="Banner da campanha (landing)"
+              value={bannerFile}
+              onChange={setBannerFile}
+              disabled={saveLoading || !canEdit}
+            />
 
             {canEdit && hasFormChanges && (
               <Button

@@ -16,6 +16,7 @@ import { formatDateTime } from '../utils/format';
 import { PageHeader } from '../components/PageHeader';
 import { StatusMessage } from '../components/StatusMessage';
 import { ConfirmDialog } from '../components/ConfirmDialog';
+import { ImageUploadField } from '../components/forms/ImageUploadField';
 import type {
   MerchantDetail,
   MerchantLocation,
@@ -178,9 +179,15 @@ export function MerchantDetailPage() {
   const [statusToggling, setStatusToggling] = React.useState(false);
   /** Modal de confirmação: 'suspend' = Desativar, 'activate' = Ativar, null = fechado. */
   const [statusConfirmAction, setStatusConfirmAction] = React.useState<'suspend' | 'activate' | null>(null);
+  /** Logo para lista na landing — estado local; API de merchant ainda não envia arquivo. */
+  const [landingLogoFile, setLandingLogoFile] = React.useState<File | null>(null);
 
   const tenantId = tenant?.tenantId ?? '';
   const idToLoad = isNew ? '' : (merchantId ?? '');
+
+  React.useEffect(() => {
+    setLandingLogoFile(null);
+  }, [isNew, idToLoad]);
 
   // Carregar detalhes quando não for criação
   React.useEffect(() => {
@@ -247,6 +254,7 @@ export function MerchantDetailPage() {
     if (!tenantId) return;
     setSaving(true);
     setError(null);
+    void landingLogoFile;
     const payload: CreateMerchantPayload = {
       name: form.name,
       fantasyName: form.fantasyName || null,
@@ -516,6 +524,18 @@ export function MerchantDetailPage() {
             </div>
           </div>
         </div>
+      </section>
+
+      <section className="rounded-lg border border-border bg-card p-4">
+        <h2 className="mb-3 text-sm font-semibold text-foreground">Identidade visual (landing)</h2>
+        <ImageUploadField
+          variant="merchantLogo"
+          id="merchant-landing-logo"
+          label="Logo da loja (lista de participantes na landing)"
+          value={landingLogoFile}
+          onChange={setLandingLogoFile}
+          disabled={readonly}
+        />
       </section>
 
       {/* Contato */}

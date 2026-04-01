@@ -1,10 +1,12 @@
 import * as React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@core-ui/ui';
+import { Plus } from 'lucide-react';
 import { PageHeader } from '../../components/PageHeader';
 import { StatusMessage } from '../../components/StatusMessage';
 import { getTenantsPaged } from '../../api/system-admin-tenants';
 import type { SystemAdminTenantListItem } from '../../types/system-admin-tenant-api';
+import { TenantStatusBadge } from '../../components/admin/TenantStatusBadge';
 
 const PER_PAGE = 10;
 
@@ -69,11 +71,23 @@ export function SystemAdminTenantsPage() {
     navigate(`/admin/tenants/${encodeURIComponent(t.id)}`);
   };
 
+  const goToNew = () => navigate('/admin/tenants/new');
+
   return (
     <div className="space-y-6">
       <PageHeader
         title="Tenants"
         subtitle="Listagem e edição (system_admin). Clique na linha para ver/editar."
+        action={
+          <Button
+            size="lg"
+            className="gap-2 bg-[var(--brand-primary)] hover:opacity-90"
+            onClick={goToNew}
+          >
+            <Plus className="h-4 w-4" />
+            Novo
+          </Button>
+        }
       />
 
       <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-2">
@@ -150,7 +164,9 @@ export function SystemAdminTenantsPage() {
                       >
                         <td className="px-4 py-3 font-medium text-foreground">{t.fantasyName ?? '—'}</td>
                         <td className="px-4 py-3 text-foreground">{t.document ?? '—'}</td>
-                        <td className="px-4 py-3 text-foreground">{t.status ?? '—'}</td>
+                        <td className="px-4 py-3 text-foreground">
+                          {t.status ? <TenantStatusBadge status={t.status} /> : '—'}
+                        </td>
                       </tr>
                     ))
                   )}

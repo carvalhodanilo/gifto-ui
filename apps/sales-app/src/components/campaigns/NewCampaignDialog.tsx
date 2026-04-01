@@ -4,6 +4,7 @@ import { useTenant } from '../../contexts/TenantContext';
 import { createCampaign } from '../../api/campaigns';
 import { StatusMessage } from '../StatusMessage';
 import { Dialog } from '../sales/Dialog';
+import { ImageUploadField } from '../forms/ImageUploadField';
 import { campaignInputClass } from './campaignFormStyles';
 import type { CreateCampaignRequest } from '../../types/campaign-api';
 
@@ -27,6 +28,8 @@ export function NewCampaignDialog({ open, onClose, onSuccess }: NewCampaignDialo
   const [expirationDays, setExpirationDays] = React.useState<number>(30);
   const [startsAt, setStartsAt] = React.useState('');
   const [endsAt, setEndsAt] = React.useState('');
+  /** Banner da landing — estado local; API de campanha ainda não envia arquivo. */
+  const [bannerFile, setBannerFile] = React.useState<File | null>(null);
 
   const canSubmit =
     state === 'form' &&
@@ -48,6 +51,7 @@ export function NewCampaignDialog({ open, onClose, onSuccess }: NewCampaignDialo
     setExpirationDays(30);
     setStartsAt('');
     setEndsAt('');
+    setBannerFile(null);
   }, []);
 
   const prevOpen = React.useRef(false);
@@ -60,6 +64,7 @@ export function NewCampaignDialog({ open, onClose, onSuccess }: NewCampaignDialo
     if (!tenant?.tenantId || !canSubmit) return;
     setState('loading');
     setErrorMessage(null);
+    void bannerFile;
     const body: CreateCampaignRequest = {
       name: name.trim(),
       expirationDays,
@@ -133,6 +138,14 @@ export function NewCampaignDialog({ open, onClose, onSuccess }: NewCampaignDialo
               className={`${campaignInputClass} mt-1`}
             />
           </div>
+          <ImageUploadField
+            variant="campaignBanner"
+            id="new-campaign-banner"
+            label="Banner da campanha (landing)"
+            value={bannerFile}
+            onChange={setBannerFile}
+            disabled={state === 'loading'}
+          />
           <Button
             size="lg"
             className="w-full bg-[var(--brand-primary)] hover:opacity-90 disabled:opacity-50"

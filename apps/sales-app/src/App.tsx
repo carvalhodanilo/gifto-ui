@@ -16,6 +16,7 @@ import { MerchantDetailPage } from './pages/MerchantDetailPage';
 import { RedeemPage } from './pages/RedeemPage';
 import { HistoryPage } from './pages/HistoryPage';
 import { SystemAdminTenantsPage } from './pages/admin/SystemAdminTenantsPage';
+import { SystemAdminTenantCreatePage } from './pages/admin/SystemAdminTenantCreatePage';
 import { SystemAdminTenantDetailPage } from './pages/admin/SystemAdminTenantDetailPage';
 import { SystemAdminTenantMerchantsPage } from './pages/admin/SystemAdminTenantMerchantsPage';
 
@@ -72,6 +73,14 @@ function AuthenticatedRoutes() {
           element={
             <RoleGuard allowedRoles={['system_admin']}>
               <SystemAdminTenantsPage />
+            </RoleGuard>
+          }
+        />
+        <Route
+          path="admin/tenants/new"
+          element={
+            <RoleGuard allowedRoles={['system_admin']}>
+              <SystemAdminTenantCreatePage />
             </RoleGuard>
           }
         />

@@ -5,6 +5,7 @@ import { PageHeader } from '../../components/PageHeader';
 import { StatusMessage } from '../../components/StatusMessage';
 import { getTenantById, updateTenant } from '../../api/system-admin-tenants';
 import type { SystemAdminTenantDetail, UpdateTenantPayload } from '../../types/system-admin-tenant-api';
+import { TenantFormFields } from '../../components/admin/TenantFormFields';
 
 type ActionMenuState = 'closed' | 'open';
 
@@ -38,6 +39,8 @@ export function SystemAdminTenantDetailPage() {
   const [saving, setSaving] = React.useState(false);
   const [isEditing, setIsEditing] = React.useState(false);
   const [menu, setMenu] = React.useState<ActionMenuState>('closed');
+  /** Logo: preview local apenas; PATCH /tenants ainda não envia arquivo. */
+  const [logoFile, setLogoFile] = React.useState<File | null>(null);
 
   React.useEffect(() => {
     if (!id) {
@@ -59,6 +62,10 @@ export function SystemAdminTenantDetailPage() {
       .finally(() => setLoading(false));
   }, [id]);
 
+  React.useEffect(() => {
+    setLogoFile(null);
+  }, [id]);
+
   const setField = React.useCallback(<K extends keyof UpdateTenantPayload>(key: K, value: UpdateTenantPayload[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
   }, []);
@@ -68,6 +75,7 @@ export function SystemAdminTenantDetailPage() {
     setSaving(true);
     setError(null);
     try {
+      void logoFile;
       await updateTenant(id, {
         name: form.name,
         fantasyName: form.fantasyName ?? null,
@@ -158,92 +166,32 @@ export function SystemAdminTenantDetailPage() {
         ) : !detail ? (
           <div className="py-8 text-sm text-muted-foreground">Tenant não encontrado.</div>
         ) : (
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div className="space-y-1">
-              <label className={labelClass} htmlFor="tenant-name">
-                Nome (razão)
-              </label>
-              <input
-                id="tenant-name"
-                className={inputClass}
-                value={form.name}
-                onChange={(e) => setField('name', e.target.value)}
-                disabled={!isEditing || saving}
-              />
+          <>
+            <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="space-y-1">
+                <label className={labelClass} htmlFor="tenant-document">
+                  Documento
+                </label>
+                <input id="tenant-document" className={inputClass} value={detail.document} disabled />
+              </div>
+              <div className="space-y-1">
+                <label className={labelClass} htmlFor="tenant-status">
+                  Status
+                </label>
+                <input id="tenant-status" className={inputClass} value={detail.status} disabled />
+              </div>
             </div>
-            <div className="space-y-1">
-              <label className={labelClass} htmlFor="tenant-fantasy">
-                Nome fantasia
-              </label>
-              <input
-                id="tenant-fantasy"
-                className={inputClass}
-                value={form.fantasyName ?? ''}
-                onChange={(e) => setField('fantasyName', e.target.value || null)}
-                disabled={!isEditing || saving}
-              />
-            </div>
-            <div className="space-y-1">
-              <label className={labelClass} htmlFor="tenant-document">
-                Documento
-              </label>
-              <input id="tenant-document" className={inputClass} value={detail.document} disabled />
-            </div>
-            <div className="space-y-1">
-              <label className={labelClass} htmlFor="tenant-status">
-                Status
-              </label>
-              <input id="tenant-status" className={inputClass} value={detail.status} disabled />
-            </div>
-            <div className="space-y-1">
-              <label className={labelClass} htmlFor="tenant-email">
-                E-mail
-              </label>
-              <input
-                id="tenant-email"
-                className={inputClass}
-                value={form.email}
-                onChange={(e) => setField('email', e.target.value)}
-                disabled={!isEditing || saving}
-              />
-            </div>
-            <div className="space-y-1">
-              <label className={labelClass} htmlFor="tenant-url">
-                URL
-              </label>
-              <input
-                id="tenant-url"
-                className={inputClass}
-                value={form.url}
-                onChange={(e) => setField('url', e.target.value)}
-                disabled={!isEditing || saving}
-              />
-            </div>
-            <div className="space-y-1">
-              <label className={labelClass} htmlFor="tenant-phone1">
-                Telefone 1
-              </label>
-              <input
-                id="tenant-phone1"
-                className={inputClass}
-                value={form.phone1 ?? ''}
-                onChange={(e) => setField('phone1', e.target.value || null)}
-                disabled={!isEditing || saving}
-              />
-            </div>
-            <div className="space-y-1">
-              <label className={labelClass} htmlFor="tenant-phone2">
-                Telefone 2
-              </label>
-              <input
-                id="tenant-phone2"
-                className={inputClass}
-                value={form.phone2 ?? ''}
-                onChange={(e) => setField('phone2', e.target.value || null)}
-                disabled={!isEditing || saving}
-              />
-            </div>
-          </div>
+
+            <TenantFormFields
+              form={form}
+              setField={setField}
+              readonly={!isEditing || saving}
+              showDocument={false}
+              showPhone2
+              logoFile={logoFile}
+              onLogoChange={setLogoFile}
+            />
+          </>
         )}
       </div>
 
