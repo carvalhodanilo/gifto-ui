@@ -11,13 +11,12 @@ interface SalesTableProps {
   currentPage: number;
   perPage: number;
   onPageChange: (page: number) => void;
-  onRowClick: (item: TenantVoucherItem) => void;
 }
 
 /**
  * Tabela responsiva de vouchers: desktop = tabela; mobile = cards.
- * Colunas: campaignName, valor (R$), status (badge), issuedAt, expiresAt.
- * Linha clicável abre detalhes (callback onRowClick).
+ * Colunas: campanha, comprador, valor, status, emitido, expira.
+ * Linha não é clicável (sem modal de detalhes).
  */
 export function SalesTable({
   items,
@@ -26,7 +25,6 @@ export function SalesTable({
   currentPage,
   perPage,
   onPageChange,
-  onRowClick,
 }: SalesTableProps) {
   const totalPages = perPage > 0 ? Math.max(1, Math.ceil(total / perPage)) : 1;
   const hasPrev = currentPage > 0;
@@ -43,10 +41,12 @@ export function SalesTable({
           <>
             {/* Desktop: tabela */}
             <div className="hidden overflow-x-auto md:block">
-              <table className="w-full text-sm">
+              <table className="w-full min-w-[720px] text-sm">
                 <thead>
                   <tr className="border-b border-border bg-muted/50">
                     <th className="px-4 py-3 text-left font-medium text-foreground">Campanha</th>
+                    <th className="px-4 py-3 text-left font-medium text-foreground">Comprador</th>
+                    <th className="px-4 py-3 text-left font-medium text-foreground">Telefone</th>
                     <th className="px-4 py-3 text-right font-medium text-foreground">Valor (R$)</th>
                     <th className="px-4 py-3 text-left font-medium text-foreground">Status</th>
                     <th className="px-4 py-3 text-left font-medium text-foreground">Emitido em</th>
@@ -57,18 +57,15 @@ export function SalesTable({
                   {items.map((item) => (
                     <tr
                       key={item.voucherId}
-                      role="button"
-                      tabIndex={0}
-                      onClick={() => onRowClick(item)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault();
-                          onRowClick(item);
-                        }
-                      }}
-                      className="border-b border-border/50 last:border-0 hover:bg-muted/30 cursor-pointer"
+                      className="border-b border-border/50 last:border-0 hover:bg-muted/30"
                     >
                       <td className="px-4 py-3 text-muted-foreground">{item.campaignName}</td>
+                      <td className="px-4 py-3 text-muted-foreground">
+                        {item.buyerName?.trim() ? item.buyerName : '—'}
+                      </td>
+                      <td className="px-4 py-3 text-muted-foreground font-mono text-xs">
+                        {item.buyerPhone?.trim() ? item.buyerPhone : '—'}
+                      </td>
                       <td className="px-4 py-3 text-right font-medium text-foreground">
                         {formatCurrency(item.amountCents ?? 0)}
                       </td>
@@ -87,16 +84,17 @@ export function SalesTable({
               </table>
             </div>
 
-            {/* Mobile: cards */}
+            {/* Mobile: cards (somente leitura) */}
             <div className="md:hidden divide-y divide-border">
               {items.map((item) => (
-                <button
-                  key={item.voucherId}
-                  type="button"
-                  onClick={() => onRowClick(item)}
-                  className="w-full px-4 py-3 text-left hover:bg-muted/30 active:bg-muted/50"
-                >
+                <div key={item.voucherId} className="px-4 py-3">
                   <div className="font-medium text-foreground">{item.campaignName}</div>
+                  {(item.buyerName || item.buyerPhone) && (
+                    <div className="mt-1 text-xs text-muted-foreground">
+                      {item.buyerName?.trim() ? item.buyerName : '—'}
+                      {item.buyerPhone?.trim() ? ` · ${item.buyerPhone}` : ''}
+                    </div>
+                  )}
                   <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
                     <span className="font-medium text-foreground">
                       {formatCurrency(item.amountCents ?? 0)}
@@ -106,7 +104,7 @@ export function SalesTable({
                   <div className="mt-1 text-xs text-muted-foreground">
                     Emitido: {formatDateTime(item.issuedAt)} · Expira: {formatExpiry(item.expiresAt)}
                   </div>
-                </button>
+                </div>
               ))}
             </div>
           </>

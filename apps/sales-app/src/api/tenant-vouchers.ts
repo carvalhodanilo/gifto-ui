@@ -16,6 +16,10 @@ function buildQuery(params: TenantVouchersParams): string {
     search.set('campaignName', params.campaignName);
   if (params.displayCode != null && params.displayCode !== '')
     search.set('displayCode', params.displayCode);
+  if (params.buyerName != null && params.buyerName !== '')
+    search.set('buyerName', params.buyerName);
+  if (params.buyerPhone != null && params.buyerPhone !== '')
+    search.set('buyerPhone', params.buyerPhone);
   const q = search.toString();
   return q ? `?${q}` : '';
 }

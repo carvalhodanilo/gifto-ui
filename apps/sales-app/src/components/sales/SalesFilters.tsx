@@ -15,7 +15,7 @@ const inputClass =
   'mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]/50';
 
 /**
- * Filtros da listagem de vouchers: displayCode, campaignName, apenas ativos.
+ * Filtros da listagem de vouchers: código, campanha, comprador (nome/telefone), apenas ativos.
  * Visual leve e clean; Buscar e Limpar filtros.
  */
 export function SalesFilters({
@@ -34,9 +34,19 @@ export function SalesFilters({
   const handleActive = (e: React.ChangeEvent<HTMLInputElement>) => {
     onFiltersChange((prev) => ({ ...prev, active: e.target.checked }));
   };
+  const handleBuyerName = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onFiltersChange((prev) => ({ ...prev, buyerName: e.target.value }));
+  };
+  const handleBuyerPhone = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onFiltersChange((prev) => ({ ...prev, buyerPhone: e.target.value }));
+  };
 
   const hasFilters =
-    filters.displayCode !== '' || filters.campaignName !== '' || !filters.active;
+    filters.displayCode !== '' ||
+    filters.campaignName !== '' ||
+    filters.buyerName !== '' ||
+    filters.buyerPhone !== '' ||
+    !filters.active;
 
   return (
     <div className="rounded-lg border border-border bg-card p-4">
@@ -65,6 +75,34 @@ export function SalesFilters({
             placeholder="Ex: DEFAULT"
             value={filters.campaignName}
             onChange={handleCampaignName}
+            disabled={disabled}
+            className={inputClass}
+          />
+        </div>
+        <div className="min-w-0 flex-1 sm:max-w-[200px]">
+          <label htmlFor="filter-buyer-name" className="text-muted-foreground text-xs">
+            Comprador (nome)
+          </label>
+          <input
+            id="filter-buyer-name"
+            type="text"
+            placeholder="Nome"
+            value={filters.buyerName}
+            onChange={handleBuyerName}
+            disabled={disabled}
+            className={inputClass}
+          />
+        </div>
+        <div className="min-w-0 flex-1 sm:max-w-[160px]">
+          <label htmlFor="filter-buyer-phone" className="text-muted-foreground text-xs">
+            Comprador (telefone)
+          </label>
+          <input
+            id="filter-buyer-phone"
+            type="text"
+            placeholder="Telefone"
+            value={filters.buyerPhone}
+            onChange={handleBuyerPhone}
             disabled={disabled}
             className={inputClass}
           />

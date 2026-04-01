@@ -6,11 +6,12 @@ export interface Campaign {
   name: string;
 }
 
-/** Request para emissão de voucher. POST /v1/vouchers/issue */
+/** Body enviado em POST /v1/vouchers/issue (tenant vem do JWT). */
 export interface IssueVoucherRequest {
-  tenantId: string;
   campaignId: string;
   amountCents: number;
+  buyerName: string;
+  buyerPhone: string;
 }
 
 /** Resposta da API de emissão de voucher. */
@@ -53,6 +54,8 @@ export interface TenantVoucherItem {
   amountCents?: number;
   issuedAt: string; // ISO 8601
   expiresAt: string; // ISO 8601
+  buyerName?: string | null;
+  buyerPhone?: string | null;
 }
 
 /** Resposta paginada de GET /v1/vouchers/list. */
@@ -70,4 +73,6 @@ export interface TenantVouchersParams {
   active?: boolean;
   campaignName?: string;
   displayCode?: string;
+  buyerName?: string;
+  buyerPhone?: string;
 }

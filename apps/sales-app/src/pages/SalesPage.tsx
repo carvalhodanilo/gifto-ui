@@ -6,14 +6,11 @@ import { SalesEmptyState } from '../components/sales/SalesEmptyState';
 import { SalesFilters } from '../components/sales/SalesFilters';
 import { SalesTable } from '../components/sales/SalesTable';
 import { NewVoucherDialog } from '../components/sales/NewVoucherDialog';
-import { VoucherDetailsDialog } from '../components/sales/VoucherDetailsDialog';
 import { StatusMessage } from '../components/StatusMessage';
-import type { TenantVoucherItem } from '../types/voucher';
 
 /**
  * Página de Vendas: central operacional de emissão e acompanhamento de vouchers.
- * Listagem real por tenant (GET /tenants/{tenantId}/vouchers), filtros, paginação,
- * refresh após emissão e modal de detalhes (placeholder).
+ * Listagem por tenant (GET /v1/vouchers/list), filtros, paginação e refresh após emissão.
  */
 export function SalesPage() {
   const { tenant } = useTenant();
@@ -34,7 +31,6 @@ export function SalesPage() {
   } = useTenantVouchers(tenantId);
 
   const [modalOpen, setModalOpen] = React.useState(false);
-  const [detailsVoucher, setDetailsVoucher] = React.useState<TenantVoucherItem | null>(null);
 
   const handleNewVoucher = () => setModalOpen(true);
   const handleCloseModal = () => setModalOpen(false);
@@ -43,10 +39,6 @@ export function SalesPage() {
   const handleIssueSuccess = React.useCallback(() => {
     refetch();
   }, [refetch]);
-
-  const handleRowClick = React.useCallback((item: TenantVoucherItem) => {
-    setDetailsVoucher(item);
-  }, []);
 
   const showEmpty = !loading && !error && items.length === 0;
   const showTable = !error && (items.length > 0 || loading);
@@ -80,7 +72,6 @@ export function SalesPage() {
           currentPage={currentPage}
           perPage={perPage}
           onPageChange={setPage}
-          onRowClick={handleRowClick}
         />
       )}
 
@@ -88,11 +79,6 @@ export function SalesPage() {
         open={modalOpen}
         onClose={handleCloseModal}
         onSuccess={handleIssueSuccess}
-      />
-
-      <VoucherDetailsDialog
-        open={detailsVoucher !== null}
-        onClose={() => setDetailsVoucher(null)}
       />
     </div>
   );

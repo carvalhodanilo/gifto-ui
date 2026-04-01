@@ -7,12 +7,16 @@ const DEFAULT_PER_PAGE = 10;
 export interface TenantVouchersFilters {
   displayCode: string;
   campaignName: string;
+  buyerName: string;
+  buyerPhone: string;
   active: boolean;
 }
 
 const defaultFilters: TenantVouchersFilters = {
   displayCode: '',
   campaignName: '',
+  buyerName: '',
+  buyerPhone: '',
   active: true,
 };
 
@@ -68,6 +72,8 @@ export function useTenantVouchers(
       active: appliedFilters.active,
       campaignName: appliedFilters.campaignName || undefined,
       displayCode: appliedFilters.displayCode || undefined,
+      buyerName: appliedFilters.buyerName || undefined,
+      buyerPhone: appliedFilters.buyerPhone || undefined,
     };
     getTenantVouchers(tenantId, params)
       .then((res) => {

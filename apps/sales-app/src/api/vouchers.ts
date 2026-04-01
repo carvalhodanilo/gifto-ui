@@ -10,7 +10,7 @@ function generateIdempotencyKey(): string {
 /**
  * Emite um voucher. POST {baseUrl}/v1/vouchers/issue
  * Headers: Idempotency-Key (UUID por tentativa).
- * Body: tenantId (sempre do TenantContext), campaignId, amountCents.
+ * Body: campaignId, amountCents, buyerName, buyerPhone.
  */
 export async function issueVoucher(
   request: IssueVoucherRequest
@@ -24,7 +24,12 @@ export async function issueVoucher(
       'Content-Type': 'application/json',
       'Idempotency-Key': idempotencyKey,
     }),
-    body: JSON.stringify(request),
+    body: JSON.stringify({
+      campaignId: request.campaignId,
+      amountCents: request.amountCents,
+      buyerName: request.buyerName,
+      buyerPhone: request.buyerPhone,
+    }),
   });
 
   if (!res.ok) {

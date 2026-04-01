@@ -11,19 +11,17 @@ import { VoucherIssueSuccess } from './VoucherIssueSuccess';
 import { VoucherPrintLabel } from './VoucherPrintLabel';
 import { Dialog } from './Dialog';
 import type { IssueVoucherResponse } from '../../types/voucher';
-import type { VoucherListItem } from '../../types/voucher';
 
 type DialogState = 'form' | 'loading' | 'success' | 'error';
 
 interface NewVoucherDialogProps {
   open: boolean;
   onClose: () => void;
-  onSuccess: (item: VoucherListItem) => void;
+  onSuccess: () => void;
 }
 
 /**
- * Modal "Novo voucher": formulário (campanha + valor) → loading → sucesso.
- * Integração real: POST /v1/vouchers/issue. tenantId sempre do TenantContext.
+ * Modal "Novo voucher": campanha, valor, nome e telefone do comprador → POST /v1/vouchers/issue.
  */
 export function NewVoucherDialog({ open, onClose, onSuccess }: NewVoucherDialogProps) {
   const { tenant } = useTenant();
@@ -35,6 +33,8 @@ export function NewVoucherDialog({ open, onClose, onSuccess }: NewVoucherDialogP
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
   const [campaignId, setCampaignId] = React.useState<string | null>(null);
   const [amountCents, setAmountCents] = React.useState<number | null>(null);
+  const [buyerName, setBuyerName] = React.useState('');
+  const [buyerPhone, setBuyerPhone] = React.useState('');
   const [successData, setSuccessData] = React.useState<{
     data: IssueVoucherResponse;
     amountCents: number;
@@ -53,6 +53,8 @@ export function NewVoucherDialog({ open, onClose, onSuccess }: NewVoucherDialogP
     !!tenant?.tenantId &&
     !!campaignId &&
     amountCents !== null &&
+    buyerName.trim().length > 0 &&
+    buyerPhone.trim().length > 0 &&
     !campaignsLoading;
 
   const handleOpenChange = React.useCallback(() => {
@@ -65,6 +67,8 @@ export function NewVoucherDialog({ open, onClose, onSuccess }: NewVoucherDialogP
     setErrorMessage(null);
     setCampaignId(null);
     setAmountCents(null);
+    setBuyerName('');
+    setBuyerPhone('');
     setSuccessData(null);
     setPrintData(null);
   }, []);
@@ -78,24 +82,20 @@ export function NewVoucherDialog({ open, onClose, onSuccess }: NewVoucherDialogP
 
   const handleIssue = async () => {
     if (!tenant?.tenantId || !campaignId || amountCents == null) return;
+    const name = buyerName.trim();
+    const phone = buyerPhone.trim();
+    if (!name || !phone) return;
     setState('loading');
     setErrorMessage(null);
     try {
       const data = await issueVoucher({
-        tenantId: tenant.tenantId,
         campaignId,
         amountCents,
+        buyerName: name,
+        buyerPhone: phone,
       });
       const campaignName = campaigns.find((c) => c.id === campaignId)?.name ?? campaignId;
-      const item: VoucherListItem = {
-        voucherId: data.voucherId,
-        displayCode: data.displayCode,
-        campaignName,
-        amountCents,
-        issuedAt: new Date().toISOString(),
-        status: 'Emitido',
-      };
-      onSuccess(item);
+      onSuccess();
       setSuccessData({ data, amountCents, campaignName });
       setState('success');
     } catch (err) {
@@ -204,6 +204,36 @@ export function NewVoucherDialog({ open, onClose, onSuccess }: NewVoucherDialogP
               onChange={setAmountCents}
               disabled={state === 'loading'}
             />
+            <div className="space-y-1">
+              <label htmlFor="voucher-buyer-name" className="text-sm font-medium text-foreground">
+                Nome do comprador
+              </label>
+              <input
+                id="voucher-buyer-name"
+                type="text"
+                autoComplete="name"
+                placeholder="Nome completo"
+                value={buyerName}
+                onChange={(e) => setBuyerName(e.target.value)}
+                disabled={state === 'loading'}
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              />
+            </div>
+            <div className="space-y-1">
+              <label htmlFor="voucher-buyer-phone" className="text-sm font-medium text-foreground">
+                Telefone do comprador
+              </label>
+              <input
+                id="voucher-buyer-phone"
+                type="tel"
+                autoComplete="tel"
+                placeholder="Ex: 11999990000"
+                value={buyerPhone}
+                onChange={(e) => setBuyerPhone(e.target.value)}
+                disabled={state === 'loading'}
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              />
+            </div>
             <Button
               size="lg"
               className="w-full bg-[var(--brand-primary)] hover:opacity-90 disabled:opacity-50"
