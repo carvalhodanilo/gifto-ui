@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Button } from '@core-ui/ui';
 import { useTenant } from '../../contexts/TenantContext';
-import { updateCampaign, activateCampaign, pauseCampaign, suspendCampaign } from '../../api/campaigns';
+import { updateCampaign, activateCampaign, pauseCampaign } from '../../api/campaigns';
 import { Dialog } from '../sales/Dialog';
 import { ConfirmDialog } from '../ConfirmDialog';
 import { StatusMessage } from '../StatusMessage';
@@ -10,7 +10,13 @@ import { CampaignStatusBadge } from './CampaignStatusBadge';
 import { formatDateOnly } from '../../utils/format';
 import type { CampaignListItem } from '../../types/campaign-api';
 
-type ConfirmAction = 'activate' | 'pause' | 'delete';
+type ConfirmAction = 'activate' | 'pause';
+
+function isWithinCampaignWindow(startsAtIso: string, endsAtIso: string, nowMs: number = Date.now()): boolean {
+  const start = new Date(startsAtIso).getTime();
+  const end = new Date(endsAtIso).getTime();
+  return nowMs >= start && nowMs <= end;
+}
 
 interface CampaignDetailsDialogProps {
   open: boolean;
@@ -20,7 +26,7 @@ interface CampaignDetailsDialogProps {
 }
 
 /**
- * Modal de detalhes: ACTIVE só pode ser pausada; DRAFT/PAUSED podem ser ativadas ou excluídas (excluir = suspend).
+ * Modal de detalhes: ACTIVE só pode ser pausada; DRAFT/PAUSED podem ser ativadas (sem exclusão — só pausar).
  */
 export function CampaignDetailsDialog({
   open,
@@ -33,7 +39,7 @@ export function CampaignDetailsDialog({
 
   const isDraft = campaign?.status === 'DRAFT';
   const canEdit = isDraft;
-  const showActivateAndDelete = campaign?.status === 'DRAFT' || campaign?.status === 'PAUSED';
+  const showActivate = campaign?.status === 'DRAFT' || campaign?.status === 'PAUSED';
   const showPauseOnly = campaign?.status === 'ACTIVE';
 
   const [name, setName] = React.useState('');
@@ -63,6 +69,30 @@ export function CampaignDetailsDialog({
       expirationDays !== campaign.expirationDays ||
       startsAt !== isoToDateInputValue(campaign.startsAt) ||
       endsAt !== isoToDateInputValue(campaign.endsAt));
+
+  const scheduleDirty =
+    !!campaign &&
+    canEdit &&
+    (startsAt !== isoToDateInputValue(campaign.startsAt) ||
+      endsAt !== isoToDateInputValue(campaign.endsAt));
+
+  const persistedWindowOk =
+    !!campaign && isWithinCampaignWindow(campaign.startsAt, campaign.endsAt);
+
+  const activateBlockedReason = (() => {
+    if (!campaign || !showActivate) return null;
+    if (scheduleDirty) {
+      return 'Salve as alterações de início e fim antes de ativar — a API usa as datas já gravadas.';
+    }
+    if (!persistedWindowOk) {
+      const now = Date.now();
+      if (now < new Date(campaign.startsAt).getTime()) {
+        return `Só é possível ativar a partir de ${formatDateOnly(campaign.startsAt)}.`;
+      }
+      return `Não é possível ativar: o período da campanha já terminou (${formatDateOnly(campaign.endsAt)}).`;
+    }
+    return null;
+  })();
 
   const handleSaveChanges = async () => {
     if (!tenantId || !campaign || !hasFormChanges) return;
@@ -95,10 +125,6 @@ export function CampaignDetailsDialog({
         onClose();
       } else if (confirm === 'pause') {
         await pauseCampaign(tenantId, campaign.id);
-        onActionSuccess();
-        onClose();
-      } else if (confirm === 'delete') {
-        await suspendCampaign(tenantId, campaign.id);
         onActionSuccess();
         onClose();
       }
@@ -217,24 +243,23 @@ export function CampaignDetailsDialog({
           )}
 
           <div className="mt-6 pt-4 border-t border-border flex flex-wrap gap-2">
-            {showActivateAndDelete && (
-              <>
+            {showActivate && (
+              <div className="flex flex-col gap-2 w-full sm:w-auto">
                 <Button
                   className="bg-[var(--brand-primary)] hover:opacity-90"
                   onClick={() => setConfirm('activate')}
-                  disabled={actionLoading}
+                  disabled={actionLoading || !!activateBlockedReason}
+                  title={
+                    activateBlockedReason ??
+                    'Ativa a campanha no período configurado (conforme datas gravadas).'
+                  }
                 >
                   Ativar campanha
                 </Button>
-                <Button
-                  variant="outline"
-                  className="text-destructive hover:bg-destructive/10"
-                  onClick={() => setConfirm('delete')}
-                  disabled={actionLoading}
-                >
-                  Excluir campanha
-                </Button>
-              </>
+                {activateBlockedReason && (
+                  <p className="text-xs text-muted-foreground max-w-md">{activateBlockedReason}</p>
+                )}
+              </div>
             )}
             {showPauseOnly && (
               <Button
@@ -269,15 +294,6 @@ export function CampaignDetailsDialog({
         title="Pausar campanha"
         message="Tem certeza que deseja pausar esta campanha?"
         confirmLabel="Pausar"
-        onConfirm={handleConfirmAction}
-        onCancel={() => setConfirm(null)}
-        loading={actionLoading}
-      />
-      <ConfirmDialog
-        open={confirm === 'delete'}
-        title="Excluir campanha"
-        message="Tem certeza que deseja excluir esta campanha?"
-        confirmLabel="Excluir"
         onConfirm={handleConfirmAction}
         onCancel={() => setConfirm(null)}
         loading={actionLoading}

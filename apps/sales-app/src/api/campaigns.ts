@@ -170,29 +170,3 @@ export async function pauseCampaign(
   }
 }
 
-/**
- * Suspende uma campanha. PATCH /campaigns/{campaignId}/suspend
- * Authorization via token. Sem body.
- */
-export async function suspendCampaign(
-  _tenantId: string,
-  campaignId: string
-): Promise<void> {
-  const url = apiUrl(`/campaigns/${encodeURIComponent(campaignId)}/suspend`);
-  const res = await authFetch(url, {
-    method: 'PATCH',
-    headers: authHeaders(),
-  });
-
-  if (!res.ok) {
-    const text = await res.text();
-    let message = `Erro ao suspender campanha: ${res.status}`;
-    try {
-      const data = text ? JSON.parse(text) : null;
-      if (data?.message) message = data.message;
-    } catch {
-      if (text) message = text;
-    }
-    throw new Error(message);
-  }
-}
