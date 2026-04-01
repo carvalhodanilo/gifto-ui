@@ -4,7 +4,7 @@ dist-ssr
 *.local
 .DS_Store
 .env
-.env.production
+#.env.production
 .env.local
 .env.*.local
 coverage
