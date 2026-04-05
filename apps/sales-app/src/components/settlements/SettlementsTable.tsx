@@ -9,7 +9,7 @@ interface SettlementsTableProps {
 }
 
 /**
- * Tabela de entries do batch: nome do merchant, total (líquido), status.
+ * Tabela de entries do batch: nome da loja, total (líquido), status.
  * Clique na linha abre o modal de detalhes.
  */
 export function SettlementsTable({
@@ -29,7 +29,7 @@ export function SettlementsTable({
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border bg-muted/50">
-                  <th className="px-4 py-3 text-left font-medium text-foreground">Nome</th>
+                  <th className="px-4 py-3 text-left font-medium text-foreground">Loja</th>
                   <th className="px-4 py-3 text-right font-medium text-foreground">Total</th>
                   <th className="px-4 py-3 text-left font-medium text-foreground">Status</th>
                 </tr>

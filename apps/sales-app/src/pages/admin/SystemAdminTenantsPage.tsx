@@ -44,7 +44,7 @@ export function SystemAdminTenantsPage() {
         });
       })
       .catch((err) => {
-        setError(err instanceof Error ? err.message : 'Erro ao carregar tenants');
+        setError(err instanceof Error ? err.message : 'Erro ao carregar parceiros');
         setData(null);
       })
       .finally(() => setLoading(false));
@@ -76,7 +76,7 @@ export function SystemAdminTenantsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Tenants"
+        title="Parceiros"
         subtitle="Listagem e edição (system_admin). Clique na linha para ver/editar."
         action={
           <Button
@@ -144,7 +144,7 @@ export function SystemAdminTenantsPage() {
                   {data.items.length === 0 ? (
                     <tr>
                       <td colSpan={3} className="px-4 py-8 text-center text-muted-foreground">
-                        Nenhum tenant encontrado.
+                        Nenhum parceiro encontrado.
                       </td>
                     </tr>
                   ) : (

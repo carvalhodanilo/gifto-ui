@@ -11,7 +11,7 @@ export function TenantNotFoundScreen({ onRetry, hostname, message }: TenantNotFo
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-8 bg-muted/20">
       <div className="max-w-md w-full text-center space-y-6">
-        <h1 className="text-2xl font-semibold text-foreground">Tenant não encontrado</h1>
+        <h1 className="text-2xl font-semibold text-foreground">Parceiro não encontrado</h1>
         <p className="text-muted-foreground">
           {message ?? 'O shopping associado a este endereço não foi encontrado ou está indisponível.'}
         </p>

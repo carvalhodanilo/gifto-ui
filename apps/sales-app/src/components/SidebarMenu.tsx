@@ -41,8 +41,8 @@ const defaultItems: SidebarMenuItem[] = [
   { to: '/history', label: 'Histórico', icon: History, allowedRoles: ['merchant_admin', 'merchant_operator'] },
   // Sales -> Liquidação: system_admin
   { to: '/settlement', label: 'Liquidação', icon: FileText, allowedRoles: ['system_admin'] },
-  // Admin -> Tenants: system_admin
-  { to: '/admin/tenants', label: 'Tenants', icon: Building2, allowedRoles: ['system_admin'] },
+  // Admin -> Parceiros (tenants na API): system_admin
+  { to: '/admin/tenants', label: 'Parceiros', icon: Building2, allowedRoles: ['system_admin'] },
   // Sales -> Lojas: tenant_admin
   { to: '/merchants', label: 'Lojas', icon: Store, allowedRoles: ['tenant_admin'] },
 ];

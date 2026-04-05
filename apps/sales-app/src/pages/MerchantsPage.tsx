@@ -87,7 +87,7 @@ export function MerchantsPage() {
     <div className="space-y-6">
       <PageHeader
         title="Lojas"
-        subtitle="CRUD de lojas do tenant. Clique na linha para ver ou editar."
+        subtitle="CRUD de lojas do parceiro. Clique na linha para ver ou editar."
         action={
           <Button
             size="lg"

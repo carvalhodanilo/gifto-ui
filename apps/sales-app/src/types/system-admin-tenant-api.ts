@@ -22,6 +22,8 @@ export interface SystemAdminTenantDetail {
   phone2: string | null;
   email: string;
   url: string;
+  /** Presente na API GET /tenants/{id} (GetTenantOutput). */
+  logoUrl?: string | null;
   status: string;
 }
 
@@ -41,5 +43,20 @@ export interface UpdateTenantPayload {
   phone2?: string | null;
   email: string;
   url: string;
+}
+
+/** Resposta de GET /tenants/{tenantId}/bank-account (system_admin). */
+export interface TenantBankAccount {
+  tenantId: string;
+  bankCode: string | null;
+  bankName: string | null;
+  branch: string | null;
+  accountNumber: string | null;
+  accountDigit: string | null;
+  accountType: string | null;
+  holderName: string | null;
+  holderDocument: string | null;
+  pixKeyType: string | null;
+  pixKeyValue: string | null;
 }
 

@@ -6,7 +6,9 @@ import type {
   SystemAdminTenantDetail,
   CreateTenantPayload,
   UpdateTenantPayload,
+  TenantBankAccount,
 } from '../types/system-admin-tenant-api';
+import type { UpdateBankAccountPayload } from '../types/merchant-api';
 import type { MerchantsListResponse } from '../types/merchant-api';
 
 function buildTenantsQuery(params: {
@@ -34,7 +36,7 @@ export async function getTenantsPaged(params: {
   const res = await authFetch(url, { headers: authHeaders() });
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(text || `Erro ao carregar tenants: ${res.status}`);
+    throw new Error(text || `Erro ao carregar parceiros: ${res.status}`);
   }
   return res.json() as Promise<SystemAdminTenantsPagedResponse>;
 }
@@ -44,7 +46,7 @@ export async function getTenantById(tenantId: string): Promise<SystemAdminTenant
   const res = await authFetch(url, { headers: authHeaders() });
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(text || `Erro ao carregar tenant: ${res.status}`);
+    throw new Error(text || `Erro ao carregar parceiro: ${res.status}`);
   }
   return res.json() as Promise<SystemAdminTenantDetail>;
 }
@@ -61,9 +63,78 @@ export async function updateTenant(
   });
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(text || `Erro ao atualizar tenant: ${res.status}`);
+    throw new Error(text || `Erro ao atualizar parceiro: ${res.status}`);
   }
   return res.json();
+}
+
+/**
+ * System_ADMIN: envia logo do parceiro (multipart).
+ * POST /tenants/{tenantId}/logo
+ */
+/**
+ * GET /tenants/{tenantId}/bank-account — system_admin.
+ * 204 = sem conta cadastrada (retorno vazio para o formulário).
+ */
+export async function getTenantBankAccount(tenantId: string): Promise<TenantBankAccount> {
+  const url = apiUrl(`/tenants/${encodeURIComponent(tenantId)}/bank-account`);
+  const res = await authFetch(url, { headers: authHeaders() });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || `Erro ao carregar dados bancários: ${res.status}`);
+  }
+  if (res.status === 204) {
+    return {
+      tenantId,
+      bankCode: null,
+      bankName: null,
+      branch: null,
+      accountNumber: null,
+      accountDigit: null,
+      accountType: null,
+      holderName: null,
+      holderDocument: null,
+      pixKeyType: null,
+      pixKeyValue: null,
+    };
+  }
+  return res.json() as Promise<TenantBankAccount>;
+}
+
+/**
+ * PUT /tenants/{tenantId}/bank-account — system_admin.
+ */
+export async function updateTenantBankAccount(
+  tenantId: string,
+  payload: UpdateBankAccountPayload
+): Promise<{ tenantId: string }> {
+  const url = apiUrl(`/tenants/${encodeURIComponent(tenantId)}/bank-account`);
+  const res = await authFetch(url, {
+    method: 'PUT',
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || `Erro ao atualizar dados bancários: ${res.status}`);
+  }
+  return res.json() as Promise<{ tenantId: string }>;
+}
+
+export async function uploadTenantLogo(tenantId: string, file: File): Promise<{ url: string }> {
+  const formData = new FormData();
+  formData.append('file', file);
+  const url = apiUrl(`/tenants/${encodeURIComponent(tenantId)}/logo`);
+  const res = await authFetch(url, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: formData,
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || `Erro ao enviar logo: ${res.status}`);
+  }
+  return res.json() as Promise<{ url: string }>;
 }
 
 /**
@@ -79,7 +150,7 @@ export async function createTenant(payload: CreateTenantPayload): Promise<{ tena
   });
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(text || `Erro ao criar tenant: ${res.status}`);
+    throw new Error(text || `Erro ao criar parceiro: ${res.status}`);
   }
   return res.json();
 }
@@ -112,7 +183,7 @@ export async function getMerchantsByTenantAsSystemAdmin(
   const res = await authFetch(url, { headers: authHeaders() });
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(text || `Erro ao carregar lojas do tenant: ${res.status}`);
+    throw new Error(text || `Erro ao carregar lojas do parceiro: ${res.status}`);
   }
   const raw = (await res.json()) as {
     currentPage: number;

@@ -141,7 +141,7 @@ function bankFormFromAccount(b: MerchantBankAccount | null): BankFormState {
   };
 }
 
-type DetailTab = 'dados' | 'bank';
+type DetailTab = 'dados' | 'bank' | 'identidade';
 
 const inputClass =
   'w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 disabled:cursor-not-allowed';
@@ -167,7 +167,7 @@ export function MerchantDetailPage() {
   /** No modo visualização (não é novo e não clicou em Editar), campos ficam travados. */
   const [isEditing, setIsEditing] = React.useState(isNew);
 
-  /** Aba ativa: Dados da loja ou Dados bancários (só exibida quando não é nova loja). */
+  /** Abas: Dados | Dados bancários | Identidade visual (última). Banco e identidade só após a loja ter ID. */
   const [activeTab, setActiveTab] = React.useState<DetailTab>('dados');
   const [bankForm, setBankForm] = React.useState<BankFormState>(emptyBankForm);
   const [bankLoading, setBankLoading] = React.useState(false);
@@ -184,10 +184,17 @@ export function MerchantDetailPage() {
 
   const tenantId = tenant?.tenantId ?? '';
   const idToLoad = isNew ? '' : (merchantId ?? '');
+  const hasSavedMerchantId = !isNew && Boolean(idToLoad);
 
   React.useEffect(() => {
     setLandingLogoFile(null);
   }, [isNew, idToLoad]);
+
+  React.useEffect(() => {
+    if (isNew && (activeTab === 'bank' || activeTab === 'identidade')) {
+      setActiveTab('dados');
+    }
+  }, [isNew, activeTab]);
 
   // Carregar detalhes quando não for criação
   React.useEffect(() => {
@@ -369,7 +376,7 @@ export function MerchantDetailPage() {
         subtitle={
           isNew
             ? 'Preencha os dados para cadastrar uma nova loja.'
-            : 'Visualize ou edite os dados da loja. Futuro: tema por merchant nesta tela.'
+            : 'Visualize ou edite os dados da loja e a identidade visual na landing.'
         }
         action={
           <div className="flex flex-wrap gap-2">
@@ -419,7 +426,7 @@ export function MerchantDetailPage() {
                 )}
               </>
             )}
-            {activeTab === 'bank' && !isNew && (
+            {activeTab === 'bank' && hasSavedMerchantId && (
               <>
                 {!bankEditing && (
                   <Button
@@ -449,36 +456,64 @@ export function MerchantDetailPage() {
         <StatusMessage message={error} variant="error" onDismiss={() => setError(null)} />
       )}
 
-      {/* Abas: só exibir quando for loja existente (dados bancários não se aplicam a "Nova loja"). */}
-      {!isNew && (
-        <div className="border-b border-border">
-          <nav className="flex gap-1" aria-label="Abas do detalhe da loja">
-            <button
-              type="button"
-              onClick={() => setActiveTab('dados')}
-              className={cn(
-                'rounded-t-lg px-4 py-2.5 text-sm font-medium transition-colors',
-                activeTab === 'dados'
-                  ? 'bg-card text-[var(--brand-primary)] border border-border border-b-0 -mb-px'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-              )}
-            >
-              Dados da loja
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab('bank')}
-              className={cn(
-                'rounded-t-lg px-4 py-2.5 text-sm font-medium transition-colors',
-                activeTab === 'bank'
-                  ? 'bg-card text-[var(--brand-primary)] border border-border border-b-0 -mb-px'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-              )}
-            >
-              Dados bancários
-            </button>
-          </nav>
-        </div>
+      <div className="border-b border-border">
+        <nav className="flex flex-wrap gap-1" aria-label="Abas do detalhe da loja">
+          <button
+            type="button"
+            onClick={() => setActiveTab('dados')}
+            className={cn(
+              'rounded-t-lg px-4 py-2.5 text-sm font-medium transition-colors',
+              activeTab === 'dados'
+                ? 'bg-card text-[var(--brand-primary)] border border-border border-b-0 -mb-px'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+            )}
+          >
+            Dados da loja
+          </button>
+          <button
+            type="button"
+            disabled={isNew}
+            title={
+              isNew
+                ? 'Salve a loja na aba Dados para obter um cadastro e liberar dados bancários.'
+                : undefined
+            }
+            onClick={() => !isNew && setActiveTab('bank')}
+            className={cn(
+              'rounded-t-lg px-4 py-2.5 text-sm font-medium transition-colors',
+              isNew && 'cursor-not-allowed opacity-50',
+              activeTab === 'bank'
+                ? 'bg-card text-[var(--brand-primary)] border border-border border-b-0 -mb-px'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+            )}
+          >
+            Dados bancários
+          </button>
+          <button
+            type="button"
+            disabled={isNew}
+            title={
+              isNew
+                ? 'Salve a loja na aba Dados para obter um cadastro e liberar identidade visual.'
+                : undefined
+            }
+            onClick={() => !isNew && setActiveTab('identidade')}
+            className={cn(
+              'rounded-t-lg px-4 py-2.5 text-sm font-medium transition-colors',
+              isNew && 'cursor-not-allowed opacity-50',
+              activeTab === 'identidade'
+                ? 'bg-card text-[var(--brand-primary)] border border-border border-b-0 -mb-px'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+            )}
+          >
+            Identidade visual
+          </button>
+        </nav>
+      </div>
+      {isNew && (
+        <p className="text-xs text-muted-foreground">
+          Dados bancários e Identidade visual ficam disponíveis após salvar a loja (quando ela tiver ID).
+        </p>
       )}
 
       {activeTab === 'dados' && (
@@ -524,18 +559,6 @@ export function MerchantDetailPage() {
             </div>
           </div>
         </div>
-      </section>
-
-      <section className="rounded-lg border border-border bg-card p-4">
-        <h2 className="mb-3 text-sm font-semibold text-foreground">Identidade visual (landing)</h2>
-        <ImageUploadField
-          variant="merchantLogo"
-          id="merchant-landing-logo"
-          label="Logo da loja (lista de participantes na landing)"
-          value={landingLogoFile}
-          onChange={setLandingLogoFile}
-          disabled={readonly}
-        />
       </section>
 
       {/* Contato */}
@@ -689,7 +712,7 @@ export function MerchantDetailPage() {
         </>
       )}
 
-      {activeTab === 'bank' && !isNew && (
+      {activeTab === 'bank' && hasSavedMerchantId && (
         <div className="space-y-6">
           {bankError && activeTab === 'bank' && (
             <StatusMessage
@@ -839,6 +862,23 @@ export function MerchantDetailPage() {
             </section>
           )}
         </div>
+      )}
+
+      {activeTab === 'identidade' && hasSavedMerchantId && (
+        <section className="rounded-lg border border-border bg-card p-4">
+          <h2 className="mb-3 text-sm font-semibold text-foreground">Identidade visual (landing)</h2>
+          <p className="mb-4 text-sm text-muted-foreground">
+            Logo da loja na lista de participantes na landing. Ative <span className="font-medium text-foreground">Editar</span> na aba Dados da loja para alterar o arquivo.
+          </p>
+          <ImageUploadField
+            variant="merchantLogo"
+            id="merchant-landing-logo"
+            label="Logo da loja (lista de participantes na landing)"
+            value={landingLogoFile}
+            onChange={setLandingLogoFile}
+            disabled={readonly}
+          />
+        </section>
       )}
 
       <ConfirmDialog

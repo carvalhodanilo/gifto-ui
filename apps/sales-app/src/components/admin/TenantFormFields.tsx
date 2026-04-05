@@ -1,5 +1,3 @@
-import { ImageUploadField } from '../forms/ImageUploadField';
-
 const inputClass =
   'w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 disabled:cursor-not-allowed';
 const labelClass = 'text-sm font-medium text-foreground';
@@ -21,14 +19,11 @@ type TenantFormFieldsProps<T extends BaseTenantForm> = {
   readonly: boolean;
   showDocument?: boolean;
   showPhone2?: boolean;
-  /** Logo para header / landing — estado local; upload no backend virá depois. */
-  logoFile: File | null;
-  onLogoChange: (file: File | null) => void;
 };
 
 /**
- * Campos reutilizáveis de tenant.
- * Evita duplicar markup/estilos entre criação e edição (padrão do app).
+ * Campos reutilizáveis de parceiro (tenant na API).
+ * Upload de logo fica na aba "Identidade visual" na edição.
  */
 export function TenantFormFields<T extends BaseTenantForm>({
   form,
@@ -36,23 +31,9 @@ export function TenantFormFields<T extends BaseTenantForm>({
   readonly,
   showDocument = false,
   showPhone2 = false,
-  logoFile,
-  onLogoChange,
 }: TenantFormFieldsProps<T>) {
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-      <div className="md:col-span-2 rounded-lg border border-dashed border-border/80 bg-muted/20 p-4">
-        <h3 className="mb-3 text-sm font-semibold text-foreground">Identidade visual</h3>
-        <ImageUploadField
-          variant="tenantLogo"
-          id="tenant-logo-upload"
-          label="Logo do shopping (header e landing)"
-          value={logoFile}
-          onChange={onLogoChange}
-          disabled={readonly}
-        />
-      </div>
-
       <div className="space-y-1">
         <label className={labelClass} htmlFor="tenant-name">
           Nome (razão)
@@ -156,4 +137,3 @@ export function TenantFormFields<T extends BaseTenantForm>({
     </div>
   );
 }
-

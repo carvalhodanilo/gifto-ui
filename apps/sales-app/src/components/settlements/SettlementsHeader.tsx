@@ -26,7 +26,7 @@ export function SettlementsHeader({
     <div className="space-y-4">
       <PageHeader
         title="Liquidação"
-        subtitle="Resumo por merchant por período (semana ISO)"
+        subtitle="Resumo por loja por período (semana ISO)"
         action={
           <Button
             size="lg"

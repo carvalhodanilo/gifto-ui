@@ -87,7 +87,7 @@ export function LedgerEntryDetailModal({
         {reversalError && <p className="mt-3 text-sm text-destructive">{reversalError}</p>}
         {!tenantId || !merchantId ? (
           <p className="mt-3 text-xs text-destructive">
-            Não foi possível identificar tenant/merchant no token. Faça login novamente.
+            Não foi possível identificar parceiro e loja no token. Faça login novamente.
           </p>
         ) : null}
         <div className="mt-4 flex flex-wrap gap-2">

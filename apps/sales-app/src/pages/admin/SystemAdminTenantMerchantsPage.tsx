@@ -76,11 +76,11 @@ export function SystemAdminTenantMerchantsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Lojas do tenant"
+        title="Lojas do parceiro"
         subtitle="Somente leitura (system_admin)."
         action={
           <Button variant="outline" onClick={() => navigate(`/admin/tenants/${encodeURIComponent(id)}`)}>
-            Voltar ao tenant
+            Voltar ao parceiro
           </Button>
         }
       />

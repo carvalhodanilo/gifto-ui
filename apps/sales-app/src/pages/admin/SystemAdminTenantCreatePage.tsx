@@ -19,14 +19,12 @@ function emptyForm(): CreateTenantPayload {
 }
 
 /**
- * System_admin: criação de tenant.
- * UX padrão do app: salvar → voltar para listagem (como em /merchants/new).
+ * System_admin: criação de parceiro (tenant na API).
+ * Abas Dados bancários e Identidade visual travadas até existir ID (após salvar → edição).
  */
 export function SystemAdminTenantCreatePage() {
   const navigate = useNavigate();
   const [form, setForm] = React.useState<CreateTenantPayload>(() => emptyForm());
-  /** Logo: preview local apenas; envio ao backend em etapa futura. */
-  const [logoFile, setLogoFile] = React.useState<File | null>(null);
   const [saving, setSaving] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
@@ -38,19 +36,22 @@ export function SystemAdminTenantCreatePage() {
     setSaving(true);
     setError(null);
     try {
-      // logoFile omitido de propósito até existir multipart / URL no backend
-      void logoFile;
-      await createTenant({
+      const res = (await createTenant({
         name: form.name,
         fantasyName: form.fantasyName ?? null,
         document: form.document.trim(),
         phone1: form.phone1 ?? null,
         email: form.email.trim(),
         url: form.url,
-      });
-      navigate('/admin/tenants', { replace: true });
+      })) as { tenantId?: string };
+      const newId = res?.tenantId;
+      if (newId) {
+        navigate(`/admin/tenants/${encodeURIComponent(newId)}`, { replace: true });
+      } else {
+        navigate('/admin/tenants', { replace: true });
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao criar tenant');
+      setError(err instanceof Error ? err.message : 'Erro ao criar parceiro');
     } finally {
       setSaving(false);
     }
@@ -59,7 +60,7 @@ export function SystemAdminTenantCreatePage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Novo tenant"
+        title="Novo parceiro"
         subtitle="Criação (system_admin)."
         action={
           <Button
@@ -76,17 +77,44 @@ export function SystemAdminTenantCreatePage() {
       {error && <StatusMessage message={error} variant="error" onDismiss={() => setError(null)} />}
 
       <div className="rounded-lg border border-border bg-card p-4">
+        <div className="mb-4 border-b border-border">
+          <nav className="flex flex-wrap items-end gap-1" aria-label="Abas do novo parceiro">
+            <button
+              type="button"
+              className="rounded-t-lg border border-border border-b-0 bg-card px-4 py-2.5 text-sm font-medium text-[var(--brand-primary)] -mb-px"
+            >
+              Dados
+            </button>
+            <button
+              type="button"
+              disabled
+              className="cursor-not-allowed rounded-t-lg px-4 py-2.5 text-sm font-medium text-muted-foreground opacity-60"
+              title="Salve o parceiro para liberar dados bancários na edição."
+            >
+              Dados bancários
+            </button>
+            <button
+              type="button"
+              disabled
+              className="cursor-not-allowed rounded-t-lg px-4 py-2.5 text-sm font-medium text-muted-foreground opacity-60"
+              title="Salve o parceiro para liberar identidade visual na edição."
+            >
+              Identidade visual
+            </button>
+          </nav>
+        </div>
+        <p className="mb-4 text-xs text-muted-foreground">
+          As abas Dados bancários e Identidade visual ficam disponíveis após salvar, na tela de edição do parceiro (com ID).
+        </p>
+
         <TenantFormFields
           form={form}
           setField={setField}
           readonly={saving}
           showDocument
           showPhone2={false}
-          logoFile={logoFile}
-          onLogoChange={setLogoFile}
         />
       </div>
     </div>
   );
 }
-

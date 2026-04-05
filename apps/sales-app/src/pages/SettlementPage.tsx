@@ -52,7 +52,7 @@ export function SettlementPage() {
         if (list.length > 0) setSelectedTenantId(list[0].id);
       })
       .catch((err) => {
-        setTenantsError(err instanceof Error ? err.message : 'Erro ao carregar tenants');
+        setTenantsError(err instanceof Error ? err.message : 'Erro ao carregar parceiros');
       })
       .finally(() => setTenantsLoading(false));
   }, [isSystemAdmin, tokenTenantId]);
@@ -104,9 +104,9 @@ export function SettlementPage() {
 
       {isSystemAdmin && !tokenTenantId && (
         <div className="space-y-2 rounded-lg border border-border bg-card p-4">
-          <div className="text-sm font-medium">Selecionar tenant (system_admin)</div>
+          <div className="text-sm font-medium">Selecionar parceiro (system_admin)</div>
           {tenantsLoading ? (
-            <div className="text-sm text-muted-foreground">Carregando tenants...</div>
+            <div className="text-sm text-muted-foreground">Carregando parceiros...</div>
           ) : tenantsError ? (
             <StatusMessage message={tenantsError} variant="error" onDismiss={() => setTenantsError(null)} />
           ) : (
@@ -117,7 +117,7 @@ export function SettlementPage() {
               disabled={tenantsLoading || tenants.length === 0}
             >
               {tenants.length === 0 ? (
-                <option value="">Nenhum tenant disponível</option>
+                <option value="">Nenhum parceiro disponível</option>
               ) : (
                 tenants.map((t) => (
                   <option key={t.id} value={t.id}>

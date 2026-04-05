@@ -109,7 +109,7 @@ export function HistoryPage() {
       <div>
         <h1 className="text-2xl font-semibold text-foreground">Histórico</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Lançamentos do merchant. Clique na linha para ver detalhes.
+          Lançamentos da loja. Clique na linha para ver detalhes.
         </p>
       </div>
 
@@ -134,7 +134,7 @@ export function HistoryPage() {
 
       {!tenantId || !merchantId ? (
         <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
-          Não foi possível identificar tenant/merchant no token. Faça login novamente.
+          Não foi possível identificar parceiro e loja no token. Faça login novamente.
         </div>
       ) : null}
 

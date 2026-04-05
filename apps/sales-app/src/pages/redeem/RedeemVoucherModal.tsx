@@ -126,7 +126,7 @@ export function RedeemVoucherModal({
             )}
             {!tenantId || !merchantId ? (
               <p className="text-xs text-destructive">
-                Não foi possível identificar tenant/merchant no token. Faça login novamente.
+                Não foi possível identificar parceiro e loja no token. Faça login novamente.
               </p>
             ) : null}
           </div>

@@ -4,7 +4,7 @@ import { authHeaders } from './authHeaders';
 import { authFetch } from './authFetch';
 
 /**
- * Lista de empresas (tenants) para o seletor no login.
+ * Lista de parceiros (tenants na API), ex.: seletor no login ou liquidação.
  * GET {baseUrl}/tenants
  */
 export async function getTenants(): Promise<GetTenantsResponse> {
@@ -13,7 +13,7 @@ export async function getTenants(): Promise<GetTenantsResponse> {
 
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(text || `Erro ao carregar empresas: ${res.status}`);
+    throw new Error(text || `Erro ao carregar parceiros: ${res.status}`);
   }
 
   return res.json() as Promise<GetTenantsResponse>;
