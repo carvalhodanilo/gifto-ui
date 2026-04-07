@@ -3,6 +3,8 @@ import type {
   GetCampaignsResponse,
   GetAllByTenantOutput,
   CreateCampaignRequest,
+  CreateCampaignResponse,
+  CampaignListItem,
 } from '../types/campaign-api';
 import type { Campaign } from '../types/voucher';
 import { authHeaders } from './authHeaders';
@@ -56,13 +58,39 @@ export async function getAllCampaigns(_tenantId: string): Promise<GetAllByTenant
 }
 
 /**
+ * Detalhe de uma campanha. GET /campaigns/{campaignId}
+ */
+export async function getCampaignById(
+  _tenantId: string,
+  campaignId: string
+): Promise<CampaignListItem> {
+  void _tenantId;
+  const url = apiUrl(`/campaigns/${encodeURIComponent(campaignId)}`);
+  const res = await authFetch(url, { headers: authHeaders() });
+
+  if (!res.ok) {
+    const text = await res.text();
+    let message = `Erro ao carregar campanha: ${res.status}`;
+    try {
+      const data = text ? JSON.parse(text) : null;
+      if (data?.message) message = data.message;
+    } catch {
+      if (text) message = text;
+    }
+    throw new Error(message);
+  }
+
+  return (await res.json()) as CampaignListItem;
+}
+
+/**
  * Cria uma campanha. POST /campaigns
  * Authorization via token
  */
 export async function createCampaign(
   _tenantId: string,
   body: CreateCampaignRequest
-): Promise<void> {
+): Promise<string> {
   const url = apiUrl('/campaigns');
   const res = await authFetch(url, {
     method: 'POST',
@@ -83,6 +111,12 @@ export async function createCampaign(
     }
     throw new Error(message);
   }
+
+  const data = (await res.json()) as CreateCampaignResponse;
+  if (!data?.campaignId) {
+    throw new Error('Resposta inválida: campaignId ausente.');
+  }
+  return data.campaignId;
 }
 
 /**

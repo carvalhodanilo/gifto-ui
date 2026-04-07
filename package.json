@@ -10,7 +10,9 @@
   ],
   "scripts": {
     "dev:sales": "npm run dev -w sales-app",
+    "dev:campaign": "npm run dev -w campaign-landing-app",
     "build:sales": "npm run build -w sales-app",
+    "build:campaign": "npm run build -w campaign-landing-app",
     "build": "npm run build:sales",
     "check:brand-buttons": "bash scripts/check-brand-button-pattern.sh",
     "lint": "npm run check:brand-buttons && eslint . --ext .ts,.tsx",

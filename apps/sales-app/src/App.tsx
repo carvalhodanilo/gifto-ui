@@ -10,6 +10,7 @@ import { AppLayout } from './layouts/AppLayout';
 import { DashboardPage } from './pages/DashboardPage';
 import { SalesPage } from './pages/SalesPage';
 import { CampaignsPage } from './pages/CampaignsPage';
+import { CampaignDetailPage } from './pages/CampaignDetailPage';
 import { SettlementPage } from './pages/SettlementPage';
 import { MerchantsPage } from './pages/MerchantsPage';
 import { MerchantDetailPage } from './pages/MerchantDetailPage';
@@ -58,6 +59,22 @@ function AuthenticatedRoutes() {
           element={
             <RoleGuard allowedRoles={['tenant_admin']}>
               <CampaignsPage />
+            </RoleGuard>
+          }
+        />
+        <Route
+          path="campaigns/new"
+          element={
+            <RoleGuard allowedRoles={['tenant_admin']}>
+              <CampaignDetailPage />
+            </RoleGuard>
+          }
+        />
+        <Route
+          path="campaigns/:campaignId"
+          element={
+            <RoleGuard allowedRoles={['tenant_admin']}>
+              <CampaignDetailPage />
             </RoleGuard>
           }
         />
