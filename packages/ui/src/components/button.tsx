@@ -8,9 +8,9 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default: 'bg-primary text-primary-foreground hover:bg-primary/90',
-        /** Cor dinâmica do tenant (--brand-primary). Evita hover:bg-primary do tema. */
+        /** Cor dinâmica do tenant; hover/active escurecem com color-mix (opacidade /90 era quase invisível). */
         brand:
-          'bg-[var(--brand-primary)] text-primary-foreground shadow-sm hover:bg-[var(--brand-primary)]/90 active:bg-[var(--brand-primary)]/80 focus-visible:ring-[var(--brand-primary)]/35',
+          'bg-[var(--brand-primary)] text-primary-foreground shadow-sm transition-[background-color,box-shadow] duration-200 hover:bg-[color-mix(in_srgb,var(--brand-primary)_82%,black)] hover:shadow-md active:bg-[color-mix(in_srgb,var(--brand-primary)_72%,black)] active:shadow-sm focus-visible:ring-[var(--brand-primary)]/35',
         destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
         outline: 'border border-input bg-background hover:bg-accent hover:text-accent-foreground',
         secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
@@ -39,7 +39,7 @@ export interface ButtonProps
 
 /**
  * Botão estilo shadcn. Para ações principais com **cor do tenant**, use **`variant="brand"`**
- * (usa `--brand-primary` e hover/active coerentes). `variant="default"` usa `primary` do tema,
+ * (usa `--brand-primary`; hover escurece o fundo e reforça a sombra). `variant="default"` usa `primary` do tema,
  * não a marca — evite `className` com `bg-[var(--brand-primary)]` nesse caso.
  */
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
