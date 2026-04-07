@@ -326,7 +326,7 @@ export function SystemAdminTenantDetailPage() {
                     {!isEditing ? (
                       <Button
                         size="lg"
-                        className="bg-[var(--brand-primary)] hover:opacity-90"
+                        variant="brand"
                         onClick={() => setIsEditing(true)}
                       >
                         Editar
@@ -334,7 +334,7 @@ export function SystemAdminTenantDetailPage() {
                     ) : (
                       <Button
                         size="lg"
-                        className="bg-[var(--brand-primary)] hover:opacity-90"
+                        variant="brand"
                         onClick={handleSave}
                         disabled={saving}
                       >
@@ -358,7 +358,7 @@ export function SystemAdminTenantDetailPage() {
                     {bankEditing && (
                       <Button
                         size="lg"
-                        className="bg-[var(--brand-primary)] hover:opacity-90"
+                        variant="brand"
                         onClick={handleSaveBank}
                         disabled={bankSaving}
                       >
@@ -710,7 +710,7 @@ export function SystemAdminTenantDetailPage() {
                   </div>
                   <Button
                     type="button"
-                    className="bg-[var(--brand-primary)] hover:opacity-90"
+                    variant="brand"
                     disabled={brandColorSaving}
                     onClick={() => void handleSaveBrandColors()}
                   >
@@ -748,7 +748,7 @@ export function SystemAdminTenantDetailPage() {
                 />
                 <Button
                   type="button"
-                  className="bg-[var(--brand-primary)] hover:opacity-90"
+                  variant="brand"
                   disabled={!logoFile || logoUploading}
                   onClick={handleUploadLogo}
                 >

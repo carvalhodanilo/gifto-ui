@@ -141,7 +141,7 @@ export function RedeemVoucherModal({
           </Button>
           {error && <p className="text-sm text-destructive">{error}</p>}
           <div className="flex flex-wrap gap-2 pt-2">
-            <Button type="submit" className="bg-[var(--brand-primary)] hover:opacity-90" disabled={!valid || submitting}>
+            <Button type="submit" variant="brand" disabled={!valid || submitting}>
               {submitting ? 'Resgatando...' : 'Confirmar resgate'}
             </Button>
             <Button type="button" variant="outline" onClick={handleClose} disabled={submitting}>

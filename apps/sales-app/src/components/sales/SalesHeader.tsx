@@ -17,7 +17,8 @@ export function SalesHeader({ onNewVoucher }: SalesHeaderProps) {
       action={
         <Button
           size="lg"
-          className="gap-2 bg-[var(--brand-primary)] hover:opacity-90"
+          variant="brand"
+          className="gap-2"
           onClick={onNewVoucher}
         >
           <Plus className="h-4 w-4" />

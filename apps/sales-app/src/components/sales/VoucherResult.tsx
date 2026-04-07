@@ -63,7 +63,8 @@ export function VoucherResult({
           <div className="flex flex-wrap justify-center gap-3 pt-2">
             <Button
               size="lg"
-              className="gap-2 bg-[var(--brand-primary)] hover:opacity-90"
+              variant="brand"
+              className="gap-2"
               onClick={onPrint}
             >
               <Printer className="h-4 w-4" />

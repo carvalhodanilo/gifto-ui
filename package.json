@@ -12,7 +12,8 @@
     "dev:sales": "npm run dev -w sales-app",
     "build:sales": "npm run build -w sales-app",
     "build": "npm run build:sales",
-    "lint": "eslint . --ext .ts,.tsx",
+    "check:brand-buttons": "bash scripts/check-brand-button-pattern.sh",
+    "lint": "npm run check:brand-buttons && eslint . --ext .ts,.tsx",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,md}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,css,md}\""
   },

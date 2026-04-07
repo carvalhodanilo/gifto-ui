@@ -123,11 +123,11 @@ export function SalesFilters({
         <div className="flex gap-2">
           <Button
             type="button"
-            variant="default"
+            variant="brand"
             size="sm"
             onClick={onApply}
             disabled={disabled}
-            className="gap-1.5 bg-[var(--brand-primary)] hover:opacity-90"
+            className="gap-1.5"
           >
             <Search className="h-3.5 w-3.5" />
             Buscar

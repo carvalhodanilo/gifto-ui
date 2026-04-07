@@ -16,7 +16,7 @@ export function CampaignsEmptyState({ onNewCampaign }: CampaignsEmptyStateProps)
       title="Nenhuma campanha encontrada"
       description='Clique em "Nova campanha" para criar a primeira.'
       action={
-        <Button className="bg-[var(--brand-primary)] hover:opacity-90" onClick={onNewCampaign}>
+        <Button variant="brand" onClick={onNewCampaign}>
           Nova campanha
         </Button>
       }

@@ -130,7 +130,8 @@ export function SettlementEntryDialog({
               />
               <Button
                 size="lg"
-                className="w-full bg-[var(--brand-primary)] hover:opacity-90 disabled:opacity-50"
+                variant="brand"
+                className="w-full disabled:opacity-50"
                 onClick={handleMarkPaid}
                 disabled={paidLoading || !paymentRef.trim()}
               >

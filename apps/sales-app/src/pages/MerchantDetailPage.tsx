@@ -419,7 +419,7 @@ export function MerchantDetailPage() {
                   <Button
                     onClick={handleSave}
                     disabled={saving}
-                    className="bg-[var(--brand-primary)] hover:opacity-90"
+                    variant="brand"
                   >
                     {saving ? 'Salvando...' : 'Salvar'}
                   </Button>
@@ -441,7 +441,7 @@ export function MerchantDetailPage() {
                   <Button
                     onClick={handleSaveBank}
                     disabled={bankSaving}
-                    className="bg-[var(--brand-primary)] hover:opacity-90"
+                    variant="brand"
                   >
                     {bankSaving ? 'Salvando...' : 'Salvar'}
                   </Button>

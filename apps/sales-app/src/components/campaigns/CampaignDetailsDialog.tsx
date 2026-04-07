@@ -238,7 +238,8 @@ export function CampaignDetailsDialog({
             {canEdit && hasFormChanges && (
               <Button
                 size="lg"
-                className="w-full bg-[var(--brand-primary)] hover:opacity-90 disabled:opacity-50"
+                variant="brand"
+                className="w-full disabled:opacity-50"
                 onClick={handleSaveChanges}
                 disabled={saveLoading}
               >
@@ -260,7 +261,7 @@ export function CampaignDetailsDialog({
             {showActivate && (
               <div className="flex flex-col gap-2 w-full sm:w-auto">
                 <Button
-                  className="bg-[var(--brand-primary)] hover:opacity-90"
+                  variant="brand"
                   onClick={() => setConfirm('activate')}
                   disabled={actionLoading || !!activateBlockedReason}
                   title={

@@ -170,6 +170,14 @@ npm run format        # formata arquivos
 npm run format:check  # apenas verifica
 ```
 
+## Botões com cor da marca (tenant)
+
+Novos CTAs / confirmar / submeter que devem usar a cor do parceiro: **`variant="brand"`** no `<Button>` importado de `@core-ui/ui`. Não uses `className` com `bg-[var(--brand-primary)]` + `hover:opacity-90` — isso colide com o hover do `variant="default"` (`bg-primary` do tema).
+
+- Implementação: [`packages/ui/src/components/button.tsx`](packages/ui/src/components/button.tsx) (`brand` em `buttonVariants`).
+- Regressão: `npm run check:brand-buttons` (também corre no `npm run lint`).
+- Outline com identidade: `variant="outline"` + `border-[var(--brand-primary)] text-[var(--brand-primary)]` quando aplicável.
+
 ## Tecnologias
 
 - **React 18** + **Vite 5**

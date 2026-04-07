@@ -46,7 +46,8 @@ export function VoucherSearchForm({
       </div>
       <Button
         type="submit"
-        className="bg-[var(--brand-primary)] hover:opacity-90 sm:shrink-0"
+        variant="brand"
+        className="sm:shrink-0"
         disabled={loading || !value.trim()}
       >
         {loading ? (

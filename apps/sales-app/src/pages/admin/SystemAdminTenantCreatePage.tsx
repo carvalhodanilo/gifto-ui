@@ -65,7 +65,7 @@ export function SystemAdminTenantCreatePage() {
         action={
           <Button
             size="lg"
-            className="bg-[var(--brand-primary)] hover:opacity-90"
+            variant="brand"
             onClick={handleSave}
             disabled={saving}
           >

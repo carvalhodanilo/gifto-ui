@@ -236,7 +236,8 @@ export function NewVoucherDialog({ open, onClose, onSuccess }: NewVoucherDialogP
             </div>
             <Button
               size="lg"
-              className="w-full bg-[var(--brand-primary)] hover:opacity-90 disabled:opacity-50"
+              variant="brand"
+              className="w-full disabled:opacity-50"
               onClick={handleIssue}
               disabled={!canSubmit}
             >

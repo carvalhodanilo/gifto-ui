@@ -148,7 +148,8 @@ export function NewCampaignDialog({ open, onClose, onSuccess }: NewCampaignDialo
           />
           <Button
             size="lg"
-            className="w-full bg-[var(--brand-primary)] hover:opacity-90 disabled:opacity-50"
+            variant="brand"
+            className="w-full disabled:opacity-50"
             onClick={handleSubmit}
             disabled={!canSubmit}
           >

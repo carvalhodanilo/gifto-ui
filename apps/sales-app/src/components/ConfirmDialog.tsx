@@ -35,7 +35,7 @@ export function ConfirmDialog({
             {cancelLabel}
           </Button>
           <Button
-            className="bg-[var(--brand-primary)] hover:opacity-90"
+            variant="brand"
             onClick={onConfirm}
             disabled={loading}
           >

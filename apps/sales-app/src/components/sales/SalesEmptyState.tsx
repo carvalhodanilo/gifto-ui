@@ -16,7 +16,7 @@ export function SalesEmptyState({ onNewVoucher }: SalesEmptyStateProps) {
       title="Nenhum voucher emitido"
       description='Clique em "Novo voucher" para emitir o primeiro.'
       action={
-        <Button className="bg-[var(--brand-primary)] hover:opacity-90" onClick={onNewVoucher}>
+        <Button variant="brand" onClick={onNewVoucher}>
           Novo voucher
         </Button>
       }

@@ -56,7 +56,8 @@ export function VoucherResultCard({ voucher, displayCodeUsedForSearch, onRedeem 
         <Button
           onClick={onRedeem}
           disabled={!hasBalance}
-          className="w-full bg-[var(--brand-primary)] hover:opacity-90 sm:w-auto"
+          variant="brand"
+          className="w-full sm:w-auto"
         >
           Resgatar
         </Button>

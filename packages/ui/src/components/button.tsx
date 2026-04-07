@@ -8,6 +8,9 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default: 'bg-primary text-primary-foreground hover:bg-primary/90',
+        /** Cor dinâmica do tenant (--brand-primary). Evita hover:bg-primary do tema. */
+        brand:
+          'bg-[var(--brand-primary)] text-primary-foreground shadow-sm hover:bg-[var(--brand-primary)]/90 active:bg-[var(--brand-primary)]/80 focus-visible:ring-[var(--brand-primary)]/35',
         destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
         outline: 'border border-input bg-background hover:bg-accent hover:text-accent-foreground',
         secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
@@ -34,10 +37,15 @@ export interface ButtonProps
   asChild?: boolean;
 }
 
+/**
+ * Botão estilo shadcn. Para ações principais com **cor do tenant**, use **`variant="brand"`**
+ * (usa `--brand-primary` e hover/active coerentes). `variant="default"` usa `primary` do tema,
+ * não a marca — evite `className` com `bg-[var(--brand-primary)]` nesse caso.
+ */
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, ...props }, ref) => {
     const comp = asChild ? 'span' : 'button';
-    const mergedClassName = cn(buttonVariants({ variant, size, className }));
+    const mergedClassName = cn(buttonVariants({ variant, size }), className);
 
     if (asChild && React.isValidElement(props.children)) {
       return React.cloneElement(props.children as React.ReactElement<{ className?: string; ref?: React.Ref<unknown> }>, {

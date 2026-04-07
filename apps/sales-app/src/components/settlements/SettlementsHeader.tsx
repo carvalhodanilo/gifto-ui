@@ -30,7 +30,8 @@ export function SettlementsHeader({
         action={
           <Button
             size="lg"
-            className="gap-2 bg-[var(--brand-primary)] hover:opacity-90"
+            variant="brand"
+            className="gap-2"
             onClick={onRunBatch}
             disabled={runBatchLoading}
           >
