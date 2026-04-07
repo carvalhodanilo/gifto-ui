@@ -19,6 +19,7 @@ import { SystemAdminTenantsPage } from './pages/admin/SystemAdminTenantsPage';
 import { SystemAdminTenantCreatePage } from './pages/admin/SystemAdminTenantCreatePage';
 import { SystemAdminTenantDetailPage } from './pages/admin/SystemAdminTenantDetailPage';
 import { SystemAdminTenantMerchantsPage } from './pages/admin/SystemAdminTenantMerchantsPage';
+import { TenantBrandingLoader } from './components/TenantBrandingLoader';
 
 /**
  * Rotas após resolução do tenant: login (público) e rotas autenticadas (dashboard, vendas).
@@ -163,7 +164,9 @@ function AppRoutes() {
     return (
       <TenantTheme tenant={tenant}>
         <AuthProvider>
-          <AuthenticatedRoutes />
+          <TenantBrandingLoader>
+            <AuthenticatedRoutes />
+          </TenantBrandingLoader>
         </AuthProvider>
       </TenantTheme>
     );

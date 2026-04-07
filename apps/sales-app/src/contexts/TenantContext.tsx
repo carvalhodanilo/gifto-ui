@@ -12,6 +12,8 @@ export interface TenantState {
   retry: () => void;
   /** Atualiza tenant com id e nome selecionados no login (mantém tema). */
   setTenantFromLogin: (tenantId: string, name: string) => void;
+  /** Nome e logo vindos da API (GET /tenants/me/branding). */
+  mergeTenantBranding: (patch: { name: string; logoUrl: string | null }) => void;
   /** Restaura tenant para o estado inicial (ex.: após logout). */
   resetTenant: () => void;
 }
@@ -23,6 +25,7 @@ const defaultState: TenantState = {
   slug: '',
   retry: () => {},
   setTenantFromLogin: () => {},
+  mergeTenantBranding: () => {},
   resetTenant: () => {},
 };
 
@@ -62,6 +65,13 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
     [initialTenant]
   );
 
+  const mergeTenantBranding = React.useCallback((patch: { name: string; logoUrl: string | null }) => {
+    setTenant((prev) => {
+      if (!prev) return prev;
+      return { ...prev, name: patch.name, logoUrl: patch.logoUrl };
+    });
+  }, []);
+
   const resetTenant = React.useCallback(() => {
     setTenant({ ...initialTenant });
   }, [initialTenant]);
@@ -76,9 +86,10 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
       slug,
       retry,
       setTenantFromLogin,
+      mergeTenantBranding,
       resetTenant,
     }),
-    [status, tenant, error, slug, retry, setTenantFromLogin, resetTenant]
+    [status, tenant, error, slug, retry, setTenantFromLogin, mergeTenantBranding, resetTenant]
   );
 
   return <TenantContext.Provider value={value}>{children}</TenantContext.Provider>;
