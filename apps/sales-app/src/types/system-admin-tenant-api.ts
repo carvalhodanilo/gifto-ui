@@ -24,7 +24,15 @@ export interface SystemAdminTenantDetail {
   url: string;
   /** Presente na API GET /tenants/{id} (GetTenantOutput). */
   logoUrl?: string | null;
+  /** Null = app usa paleta padrão. */
+  primaryColor?: string | null;
+  secondaryColor?: string | null;
   status: string;
+}
+
+export interface UpdateTenantBrandIdentityPayload {
+  primaryColor: string | null;
+  secondaryColor: string | null;
 }
 
 export interface CreateTenantPayload {

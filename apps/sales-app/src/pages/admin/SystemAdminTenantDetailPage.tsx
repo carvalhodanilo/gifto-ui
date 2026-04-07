@@ -7,6 +7,7 @@ import { ImageUploadField } from '../../components/forms/ImageUploadField';
 import {
   getTenantById,
   updateTenant,
+  updateTenantBrandIdentity,
   uploadTenantLogo,
   getTenantBankAccount,
   updateTenantBankAccount,
@@ -18,6 +19,11 @@ import type {
   UpdateBankAccountPayload,
 } from '../../types/merchant-api';
 import { TenantFormFields } from '../../components/admin/TenantFormFields';
+import {
+  DEFAULT_TENANT_PRIMARY_COLOR,
+  DEFAULT_TENANT_SECONDARY_COLOR,
+} from '../../config/mock-tenant';
+import { hexForColorInput, normalizeColorInput } from '../../utils/brandColors';
 
 type ActionMenuState = 'closed' | 'open';
 type TenantDetailTab = 'dados' | 'identidade' | 'bank';
@@ -123,6 +129,11 @@ export function SystemAdminTenantDetailPage() {
   const [logoFile, setLogoFile] = React.useState<File | null>(null);
   const [logoUploading, setLogoUploading] = React.useState(false);
   const [logoError, setLogoError] = React.useState<string | null>(null);
+  const [brandPrimary, setBrandPrimary] = React.useState('');
+  const [brandSecondary, setBrandSecondary] = React.useState('');
+  const [brandColorSaving, setBrandColorSaving] = React.useState(false);
+  const [brandColorError, setBrandColorError] = React.useState<string | null>(null);
+  const [brandColorOk, setBrandColorOk] = React.useState(false);
 
   const [bankForm, setBankForm] = React.useState<BankFormState>(emptyBankForm);
   const [bankLoading, setBankLoading] = React.useState(false);
@@ -153,10 +164,21 @@ export function SystemAdminTenantDetailPage() {
   React.useEffect(() => {
     setLogoFile(null);
     setLogoError(null);
+    setBrandPrimary('');
+    setBrandSecondary('');
+    setBrandColorError(null);
+    setBrandColorOk(false);
     setBankForm(emptyBankForm);
     setBankEditing(false);
     setBankError(null);
   }, [id]);
+
+  React.useEffect(() => {
+    if (detail) {
+      setBrandPrimary(detail.primaryColor ?? '');
+      setBrandSecondary(detail.secondaryColor ?? '');
+    }
+  }, [detail]);
 
   React.useEffect(() => {
     if (activeTab !== 'bank' || !id) return;
@@ -250,6 +272,27 @@ export function SystemAdminTenantDetailPage() {
       setLogoError(err instanceof Error ? err.message : 'Erro ao enviar logo');
     } finally {
       setLogoUploading(false);
+    }
+  };
+
+  const handleSaveBrandColors = async () => {
+    if (!id) return;
+    setBrandColorSaving(true);
+    setBrandColorError(null);
+    setBrandColorOk(false);
+    try {
+      const primary = normalizeColorInput(brandPrimary);
+      const secondary = normalizeColorInput(brandSecondary);
+      await updateTenantBrandIdentity(id, { primaryColor: primary, secondaryColor: secondary });
+      const refreshed = await getTenantById(id);
+      setDetail(refreshed);
+      setBrandPrimary(refreshed.primaryColor ?? '');
+      setBrandSecondary(refreshed.secondaryColor ?? '');
+      setBrandColorOk(true);
+    } catch (err) {
+      setBrandColorError(err instanceof Error ? err.message : 'Erro ao salvar cores');
+    } finally {
+      setBrandColorSaving(false);
     }
   };
 
@@ -595,7 +638,88 @@ export function SystemAdminTenantDetailPage() {
             )}
 
             {activeTab === 'identidade' && canOpenBankAndIdentity && (
-              <div className="space-y-4">
+              <div className="space-y-8">
+                <div className="space-y-4">
+                  <h3 className="text-sm font-semibold text-foreground">Cores da marca</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Cor principal e secundária do tema (botões, destaques). Deixe em branco para usar os
+                    padrões da aplicação ({DEFAULT_TENANT_PRIMARY_COLOR} / {DEFAULT_TENANT_SECONDARY_COLOR}
+                    ). Formato: #RGB ou #RRGGBB.
+                  </p>
+                  {brandColorOk && (
+                    <StatusMessage
+                      message="Cores salvas."
+                      variant="success"
+                      onDismiss={() => setBrandColorOk(false)}
+                    />
+                  )}
+                  {brandColorError && (
+                    <StatusMessage
+                      message={brandColorError}
+                      variant="error"
+                      onDismiss={() => setBrandColorError(null)}
+                    />
+                  )}
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <label className={labelClass} htmlFor="tenant-brand-primary">
+                        Cor principal
+                      </label>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <input
+                          id="tenant-brand-primary"
+                          type="text"
+                          value={brandPrimary}
+                          onChange={(e) => setBrandPrimary(e.target.value)}
+                          placeholder={`vazio = ${DEFAULT_TENANT_PRIMARY_COLOR}`}
+                          className={`${inputClass} min-w-[10rem] flex-1 font-mono text-xs`}
+                          autoComplete="off"
+                        />
+                        <input
+                          type="color"
+                          aria-label="Escolher cor principal"
+                          className="h-9 w-12 cursor-pointer rounded border border-input bg-background p-0.5"
+                          value={hexForColorInput(brandPrimary, DEFAULT_TENANT_PRIMARY_COLOR)}
+                          onChange={(e) => setBrandPrimary(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <label className={labelClass} htmlFor="tenant-brand-secondary">
+                        Cor secundária
+                      </label>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <input
+                          id="tenant-brand-secondary"
+                          type="text"
+                          value={brandSecondary}
+                          onChange={(e) => setBrandSecondary(e.target.value)}
+                          placeholder={`vazio = ${DEFAULT_TENANT_SECONDARY_COLOR}`}
+                          className={`${inputClass} min-w-[10rem] flex-1 font-mono text-xs`}
+                          autoComplete="off"
+                        />
+                        <input
+                          type="color"
+                          aria-label="Escolher cor secundária"
+                          className="h-9 w-12 cursor-pointer rounded border border-input bg-background p-0.5"
+                          value={hexForColorInput(brandSecondary, DEFAULT_TENANT_SECONDARY_COLOR)}
+                          onChange={(e) => setBrandSecondary(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <Button
+                    type="button"
+                    className="bg-[var(--brand-primary)] hover:opacity-90"
+                    disabled={brandColorSaving}
+                    onClick={() => void handleSaveBrandColors()}
+                  >
+                    {brandColorSaving ? 'Salvando…' : 'Salvar cores'}
+                  </Button>
+                </div>
+
+                <div className="space-y-4 border-t border-border pt-6">
+                  <h3 className="text-sm font-semibold text-foreground">Logo</h3>
                 <p className="text-sm text-muted-foreground">
                   Logo do shopping (header e landing). Envio em arquivo; substitui a imagem anterior.
                 </p>
@@ -630,6 +754,7 @@ export function SystemAdminTenantDetailPage() {
                 >
                   {logoUploading ? 'Enviando…' : 'Enviar logo'}
                 </Button>
+                </div>
               </div>
             )}
           </>

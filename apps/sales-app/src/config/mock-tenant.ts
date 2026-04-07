@@ -29,13 +29,17 @@ import type { Tenant } from '../types/tenant';
  * 5. Este arquivo (mock) pode ser removido ou mantido só para fallback/dev.
  */
 
+/** Fallback quando a API não define cor da marca (GET branding com null). */
+export const DEFAULT_TENANT_PRIMARY_COLOR = '#0f172a';
+export const DEFAULT_TENANT_SECONDARY_COLOR = '#64748b';
+
 export const MOCK_TENANT: Tenant = {
   tenantId: 'mock-shopping-1',
   name: 'Iguatemi Gift Shop',
   slug: 'iguatemishopping',
   logoUrl: null,
-  primaryColor: '#0f172a',
-  secondaryColor: '#64748b',
+  primaryColor: DEFAULT_TENANT_PRIMARY_COLOR,
+  secondaryColor: DEFAULT_TENANT_SECONDARY_COLOR,
   active: true,
 };
 

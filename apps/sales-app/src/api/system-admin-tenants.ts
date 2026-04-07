@@ -6,6 +6,7 @@ import type {
   SystemAdminTenantDetail,
   CreateTenantPayload,
   UpdateTenantPayload,
+  UpdateTenantBrandIdentityPayload,
   TenantBankAccount,
 } from '../types/system-admin-tenant-api';
 import type { UpdateBankAccountPayload } from '../types/merchant-api';
@@ -117,6 +118,33 @@ export async function updateTenantBankAccount(
   if (!res.ok) {
     const text = await res.text();
     throw new Error(text || `Erro ao atualizar dados bancários: ${res.status}`);
+  }
+  return res.json() as Promise<{ tenantId: string }>;
+}
+
+/** PUT /tenants/{tenantId}/brand-identity — system_admin. Null = gravar default na API (app usa paleta padrão). */
+export async function updateTenantBrandIdentity(
+  tenantId: string,
+  payload: UpdateTenantBrandIdentityPayload
+): Promise<{ tenantId: string }> {
+  const url = apiUrl(`/tenants/${encodeURIComponent(tenantId)}/brand-identity`);
+  const res = await authFetch(url, {
+    method: 'PUT',
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify({
+      primaryColor: payload.primaryColor,
+      secondaryColor: payload.secondaryColor,
+    }),
+  });
+  if (!res.ok) {
+    let text = await res.text();
+    try {
+      const j = JSON.parse(text) as { message?: string };
+      if (j?.message) text = j.message;
+    } catch {
+      /* keep text */
+    }
+    throw new Error(text || `Erro ao salvar cores: ${res.status}`);
   }
   return res.json() as Promise<{ tenantId: string }>;
 }

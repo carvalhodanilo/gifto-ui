@@ -1,5 +1,9 @@
 import * as React from 'react';
-import { getMockTenantConfig } from '../config/mock-tenant';
+import {
+  getMockTenantConfig,
+  DEFAULT_TENANT_PRIMARY_COLOR,
+  DEFAULT_TENANT_SECONDARY_COLOR,
+} from '../config/mock-tenant';
 import type { Tenant } from '../types/tenant';
 
 export type TenantStatus = 'idle' | 'loading' | 'success' | 'error';
@@ -12,8 +16,13 @@ export interface TenantState {
   retry: () => void;
   /** Atualiza tenant com id e nome selecionados no login (mantém tema). */
   setTenantFromLogin: (tenantId: string, name: string) => void;
-  /** Nome e logo vindos da API (GET /tenants/me/branding). */
-  mergeTenantBranding: (patch: { name: string; logoUrl: string | null }) => void;
+  /** Nome, logo e cores vindos da API (GET /tenants/me/branding). Null nas cores = paleta padrão do mock. */
+  mergeTenantBranding: (patch: {
+    name: string;
+    logoUrl: string | null;
+    primaryColor: string | null;
+    secondaryColor: string | null;
+  }) => void;
   /** Restaura tenant para o estado inicial (ex.: após logout). */
   resetTenant: () => void;
 }
@@ -65,12 +74,34 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
     [initialTenant]
   );
 
-  const mergeTenantBranding = React.useCallback((patch: { name: string; logoUrl: string | null }) => {
-    setTenant((prev) => {
-      if (!prev) return prev;
-      return { ...prev, name: patch.name, logoUrl: patch.logoUrl };
-    });
-  }, []);
+  const mergeTenantBranding = React.useCallback(
+    (patch: {
+      name: string;
+      logoUrl: string | null;
+      primaryColor: string | null;
+      secondaryColor: string | null;
+    }) => {
+      setTenant((prev) => {
+        if (!prev) return prev;
+        const primary =
+          patch.primaryColor != null && patch.primaryColor.trim() !== ''
+            ? patch.primaryColor.trim()
+            : DEFAULT_TENANT_PRIMARY_COLOR;
+        const secondary =
+          patch.secondaryColor != null && patch.secondaryColor.trim() !== ''
+            ? patch.secondaryColor.trim()
+            : DEFAULT_TENANT_SECONDARY_COLOR;
+        return {
+          ...prev,
+          name: patch.name,
+          logoUrl: patch.logoUrl,
+          primaryColor: primary,
+          secondaryColor: secondary,
+        };
+      });
+    },
+    []
+  );
 
   const resetTenant = React.useCallback(() => {
     setTenant({ ...initialTenant });

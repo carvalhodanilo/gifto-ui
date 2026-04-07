@@ -37,7 +37,12 @@ export function TenantBrandingLoader({ children }: { children: React.ReactNode }
       .then((b) => {
         if (cancelled) return;
         lastFetchedTenantIdRef.current = tenantId;
-        mergeTenantBranding({ name: b.name, logoUrl: b.logoUrl });
+        mergeTenantBranding({
+          name: b.name,
+          logoUrl: b.logoUrl,
+          primaryColor: b.primaryColor,
+          secondaryColor: b.secondaryColor,
+        });
       })
       .catch(() => {
         /* mantém mock / fallback visual */

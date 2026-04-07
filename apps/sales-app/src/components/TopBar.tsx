@@ -34,7 +34,7 @@ export function TopBar() {
         >
           {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
         </Button>
-        <TenantBranding tenant={tenant} size="sm" hideNameOnMobile />
+        <TenantBranding tenant={tenant} size="sm" hideName />
       </div>
       <div className="flex items-center gap-2">
         <UserMenu

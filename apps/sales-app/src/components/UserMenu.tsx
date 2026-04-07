@@ -85,11 +85,7 @@ export function UserMenu({
                 {displayEmail && (
                   <div className="truncate text-xs text-muted-foreground">{displayEmail}</div>
                 )}
-                <div className="mt-2 text-xs text-muted-foreground">
-                  <span className="font-medium text-foreground">Sistema</span>
-                  <span className="mx-1">·</span>
-                  <span className="truncate">{tenantName}</span>
-                </div>
+                <div className="mt-2 truncate text-xs font-medium text-foreground">{tenantName}</div>
               </div>
             </div>
           </div>

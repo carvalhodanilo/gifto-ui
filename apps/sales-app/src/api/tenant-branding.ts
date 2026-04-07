@@ -6,6 +6,8 @@ export interface TenantBrandingDto {
   tenantId: string;
   name: string;
   logoUrl: string | null;
+  primaryColor: string | null;
+  secondaryColor: string | null;
 }
 
 /** GET /tenants/me/branding — tenant_* e merchant_* autenticados. */
@@ -20,5 +22,7 @@ export async function getTenantBranding(): Promise<TenantBrandingDto> {
     tenantId: data.tenantId,
     name: data.name,
     logoUrl: data.logoUrl ?? null,
+    primaryColor: data.primaryColor ?? null,
+    secondaryColor: data.secondaryColor ?? null,
   };
 }
