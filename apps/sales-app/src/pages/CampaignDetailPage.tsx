@@ -14,13 +14,14 @@ import { StatusMessage } from '../components/StatusMessage';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { ImageUploadField } from '../components/forms/ImageUploadField';
 import { CampaignStatusBadge } from '../components/campaigns/CampaignStatusBadge';
-import { campaignInputClass, isoToDateInputValue } from '../components/campaigns/campaignFormStyles';
+import { isoToDateInputValue } from '../components/campaigns/campaignFormStyles';
 import { formatDateOnly } from '../utils/format';
 import type { CampaignListItem, CreateCampaignRequest } from '../types/campaign-api';
 
 const inputClass =
-  'w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 disabled:cursor-not-allowed';
+  'w-full min-h-10 rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0 disabled:opacity-50 disabled:cursor-not-allowed';
 const labelClass = 'text-sm font-medium text-foreground';
+const sectionTitleClass = 'text-base font-semibold text-foreground border-b border-border pb-2';
 
 type ConfirmAction = 'activate' | 'pause';
 
@@ -99,10 +100,10 @@ export function CampaignDetailPage() {
 
   const [detail, setDetail] = React.useState<CampaignListItem | null>(null);
   const [form, setForm] = React.useState<FormState>(() => emptyForm());
-  const [loading, setLoading] = React.useState(!isNew);
+  const [loading, setLoading] = React.useState(() => Boolean(campaignId && campaignId !== 'new'));
   const [error, setError] = React.useState<string | null>(null);
   const [saving, setSaving] = React.useState(false);
-  const [isEditing, setIsEditing] = React.useState(isNew);
+  const [isEditing, setIsEditing] = React.useState(() => campaignId === 'new');
   const [actionLoading, setActionLoading] = React.useState(false);
   const [actionError, setActionError] = React.useState<string | null>(null);
   const [confirm, setConfirm] = React.useState<ConfirmAction | null>(null);
@@ -116,8 +117,18 @@ export function CampaignDetailPage() {
   const showEditButton = !isNew && isDraft && !isEditing;
 
   React.useEffect(() => {
-    if (isNew || !tenantId || !idToLoad) {
-      if (isNew) setForm(emptyForm());
+    if (isNew) {
+      setDetail(null);
+      setForm(emptyForm());
+      setIsEditing(true);
+      setError(null);
+      setActionError(null);
+      setBannerFile(null);
+      setConfirm(null);
+      setLoading(false);
+      return;
+    }
+    if (!tenantId || !idToLoad) {
       setLoading(false);
       return;
     }
@@ -311,8 +322,12 @@ export function CampaignDetailPage() {
                 </Button>
               )}
               {(isNew || (isEditing && isDraft)) && (
-                <Button onClick={handleSave} disabled={saving || (!isNew && !canSaveEdit) || (isNew && !canSaveNew)} variant="brand">
-                  {saving ? 'Salvando…' : 'Salvar'}
+                <Button
+                  onClick={handleSave}
+                  disabled={saving || (!isNew && !canSaveEdit) || (isNew && !canSaveNew)}
+                  variant="brand"
+                >
+                  {saving ? 'Salvando…' : isNew ? 'Criar campanha' : 'Salvar'}
                 </Button>
               )}
             </div>
@@ -330,144 +345,203 @@ export function CampaignDetailPage() {
           <StatusMessage message={actionError} variant="error" onDismiss={() => setActionError(null)} />
         )}
 
-        <div className="rounded-lg border border-border bg-card p-4 space-y-4">
+        <div className="max-w-3xl rounded-xl border border-border bg-card shadow-sm overflow-hidden">
           {!isNew && detail && (
-            <div className="flex flex-wrap items-center gap-2 pb-2 border-b border-border">
+            <div className="flex flex-wrap items-center gap-2 border-b border-border bg-muted/30 px-5 py-3">
               <span className={labelClass}>Status</span>
               <CampaignStatusBadge status={detail.status} />
             </div>
           )}
 
-          <div>
-            <label className={labelClass} htmlFor="campaign-name">
-              Nome
-            </label>
-            {readonlyFields ? (
-              <p className="mt-1 text-sm text-foreground">{detail?.name ?? form.name}</p>
-            ) : (
-              <input
-                id="campaign-name"
-                type="text"
-                value={form.name}
-                onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                disabled={saving}
-                placeholder="Ex: Campanha Natal"
-                className={`${inputClass} mt-1`}
+          <div className="p-5 space-y-8">
+            <section className="space-y-4" aria-labelledby="campaign-section-dados">
+              <h2 id="campaign-section-dados" className={sectionTitleClass}>
+                Dados da campanha
+              </h2>
+              <div className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className={labelClass} htmlFor="campaign-name">
+                    Nome da campanha
+                  </label>
+                  {readonlyFields ? (
+                    <p className="text-sm text-foreground py-2">{(detail?.name ?? form.name) || '—'}</p>
+                  ) : (
+                    <input
+                      id="campaign-name"
+                      type="text"
+                      value={form.name}
+                      onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                      disabled={saving}
+                      placeholder="Ex.: Campanha Natal 2026"
+                      className={inputClass}
+                      autoComplete="off"
+                    />
+                  )}
+                </div>
+
+                <div className="space-y-1.5 max-w-xs">
+                  <label className={labelClass} htmlFor="campaign-expiration">
+                    Validade do voucher (dias)
+                  </label>
+                  {readonlyFields ? (
+                    <p className="text-sm text-foreground py-2">{detail?.expirationDays ?? form.expirationDays}</p>
+                  ) : (
+                    <input
+                      id="campaign-expiration"
+                      type="number"
+                      min={1}
+                      value={form.expirationDays}
+                      onChange={(e) =>
+                        setForm((f) => ({ ...f, expirationDays: parseInt(e.target.value, 10) || 0 }))
+                      }
+                      disabled={saving}
+                      className={inputClass}
+                    />
+                  )}
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-1.5">
+                    <label className={labelClass} htmlFor="campaign-starts">
+                      Data de início
+                    </label>
+                    {readonlyFields ? (
+                      <p className="text-sm text-foreground py-2">
+                        {detail ? formatDateOnly(detail.startsAt) : form.startsAt || '—'}
+                      </p>
+                    ) : (
+                      <input
+                        id="campaign-starts"
+                        type="date"
+                        value={form.startsAt}
+                        onChange={(e) => setForm((f) => ({ ...f, startsAt: e.target.value }))}
+                        disabled={saving}
+                        className={inputClass}
+                      />
+                    )}
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className={labelClass} htmlFor="campaign-ends">
+                      Data de fim
+                    </label>
+                    {readonlyFields ? (
+                      <p className="text-sm text-foreground py-2">
+                        {detail ? formatDateOnly(detail.endsAt) : form.endsAt || '—'}
+                      </p>
+                    ) : (
+                      <input
+                        id="campaign-ends"
+                        type="date"
+                        value={form.endsAt}
+                        onChange={(e) => setForm((f) => ({ ...f, endsAt: e.target.value }))}
+                        disabled={saving}
+                        className={inputClass}
+                      />
+                    )}
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section className="space-y-4" aria-labelledby="campaign-section-landing">
+              <h2 id="campaign-section-landing" className={sectionTitleClass}>
+                Landing e divulgação
+              </h2>
+              <div className="rounded-lg border border-border bg-muted/20 p-4 space-y-4">
+                <div className="flex items-start gap-3">
+                  <input
+                    id="use-platform-landing"
+                    type="checkbox"
+                    checked={form.usePlatformLanding}
+                    disabled={readonlyFields || saving}
+                    onChange={(e) =>
+                      setForm((f) => ({
+                        ...f,
+                        usePlatformLanding: e.target.checked,
+                        externalLandingUrl: e.target.checked ? '' : f.externalLandingUrl,
+                      }))
+                    }
+                    className="mt-1 h-4 w-4 shrink-0 rounded border-input accent-[var(--brand-primary)]"
+                  />
+                  <div className="space-y-1 min-w-0">
+                    <label htmlFor="use-platform-landing" className={`${labelClass} cursor-pointer`}>
+                      Usar landing da plataforma (URL automática)
+                    </label>
+                    <p className="text-xs text-muted-foreground">
+                      Desmarque se quiser informar o link da sua própria página de campanha.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className={labelClass} htmlFor="campaign-external-url">
+                    Link da sua landing (opcional)
+                  </label>
+                  {readonlyFields ? (
+                    <p className="text-sm text-foreground break-all py-2">
+                      {(detail?.externalLandingUrl ?? '').trim()
+                        ? detail!.externalLandingUrl
+                        : 'Usando a landing hospedada pela plataforma.'}
+                    </p>
+                  ) : (
+                    <>
+                      <input
+                        id="campaign-external-url"
+                        type="url"
+                        inputMode="url"
+                        placeholder="https://seusite.com/campanha"
+                        value={form.externalLandingUrl}
+                        onChange={(e) => setForm((f) => ({ ...f, externalLandingUrl: e.target.value }))}
+                        disabled={saving || form.usePlatformLanding}
+                        className={`${inputClass} ${form.usePlatformLanding ? 'opacity-50' : ''}`}
+                      />
+                      {!form.usePlatformLanding && (
+                        <p className="text-xs text-muted-foreground">
+                          Deixe em branco se ainda não tiver o link; você pode editar depois.
+                        </p>
+                      )}
+                    </>
+                  )}
+                </div>
+              </div>
+
+              <ImageUploadField
+                variant="campaignBanner"
+                id="campaign-detail-banner"
+                label="Banner da campanha (landing)"
+                value={bannerFile}
+                onChange={setBannerFile}
+                disabled={saving || readonlyFields}
               />
-            )}
+            </section>
           </div>
 
-          <div>
-            <label className={labelClass} htmlFor="campaign-expiration">
-              Validade do voucher (dias)
-            </label>
-            {readonlyFields ? (
-              <p className="mt-1 text-sm text-foreground">{detail?.expirationDays ?? form.expirationDays}</p>
-            ) : (
-              <input
-                id="campaign-expiration"
-                type="number"
-                min={1}
-                value={form.expirationDays}
-                onChange={(e) => setForm((f) => ({ ...f, expirationDays: parseInt(e.target.value, 10) || 0 }))}
-                disabled={saving}
-                className={`${inputClass} mt-1`}
-              />
-            )}
-          </div>
-
-          <div>
-            <label className={labelClass} htmlFor="campaign-starts">
-              Início
-            </label>
-            {readonlyFields ? (
-              <p className="mt-1 text-sm text-foreground">
-                {detail ? formatDateOnly(detail.startsAt) : form.startsAt}
-              </p>
-            ) : (
-              <input
-                id="campaign-starts"
-                type="date"
-                value={form.startsAt}
-                onChange={(e) => setForm((f) => ({ ...f, startsAt: e.target.value }))}
-                disabled={saving}
-                className={`${inputClass} mt-1`}
-              />
-            )}
-          </div>
-
-          <div>
-            <label className={labelClass} htmlFor="campaign-ends">
-              Fim
-            </label>
-            {readonlyFields ? (
-              <p className="mt-1 text-sm text-foreground">
-                {detail ? formatDateOnly(detail.endsAt) : form.endsAt}
-              </p>
-            ) : (
-              <input
-                id="campaign-ends"
-                type="date"
-                value={form.endsAt}
-                onChange={(e) => setForm((f) => ({ ...f, endsAt: e.target.value }))}
-                disabled={saving}
-                className={`${inputClass} mt-1`}
-              />
-            )}
-          </div>
-
-          <div className="flex items-start gap-2">
-            <input
-              id="use-platform-landing"
-              type="checkbox"
-              checked={form.usePlatformLanding}
-              disabled={readonlyFields || saving}
-              onChange={(e) =>
-                setForm((f) => ({
-                  ...f,
-                  usePlatformLanding: e.target.checked,
-                  externalLandingUrl: e.target.checked ? '' : f.externalLandingUrl,
-                }))
-              }
-              className="mt-1 h-4 w-4 rounded border-input"
-            />
-            <label htmlFor="use-platform-landing" className={`${labelClass} cursor-pointer`}>
-              Usar landing da plataforma (URL automática)
-            </label>
-          </div>
-
-          <div>
-            <label className={labelClass} htmlFor="campaign-external-url">
-              Link da sua landing (opcional)
-            </label>
-            {readonlyFields ? (
-              <p className="mt-1 text-sm text-foreground break-all">
-                {(detail?.externalLandingUrl ?? '').trim()
-                  ? detail!.externalLandingUrl
-                  : 'Landing da plataforma (URL automática)'}
-              </p>
-            ) : (
-              <input
-                id="campaign-external-url"
-                type="url"
-                inputMode="url"
-                placeholder="https://…"
-                value={form.externalLandingUrl}
-                onChange={(e) => setForm((f) => ({ ...f, externalLandingUrl: e.target.value }))}
-                disabled={saving || form.usePlatformLanding}
-                className={`${campaignInputClass} mt-1 disabled:opacity-50`}
-              />
-            )}
-          </div>
-
-          <ImageUploadField
-            variant="campaignBanner"
-            id="campaign-detail-banner"
-            label="Banner da campanha (landing)"
-            value={bannerFile}
-            onChange={setBannerFile}
-            disabled={saving || readonlyFields}
-          />
+          {(isNew || (isEditing && isDraft)) && (
+            <div className="flex flex-col gap-2 border-t border-border bg-muted/20 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="order-2 min-h-[1.25rem] sm:order-1">
+                {isNew && !canSaveNew && (
+                  <p className="text-xs text-muted-foreground">
+                    Informe nome, validade em dias e o período (início e fim) para criar a campanha.
+                  </p>
+                )}
+                {!isNew && isEditing && isDraft && !canSaveEdit && (
+                  <p className="text-xs text-muted-foreground">
+                    Altere algum campo para habilitar salvar.
+                  </p>
+                )}
+              </div>
+              <Button
+                type="button"
+                className="order-1 sm:order-2 shrink-0"
+                onClick={handleSave}
+                disabled={saving || (!isNew && !canSaveEdit) || (isNew && !canSaveNew)}
+                variant="brand"
+                size="lg"
+              >
+                {saving ? 'Salvando…' : isNew ? 'Criar campanha' : 'Salvar alterações'}
+              </Button>
+            </div>
+          )}
         </div>
       </div>
 

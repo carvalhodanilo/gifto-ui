@@ -62,14 +62,7 @@ function AuthenticatedRoutes() {
             </RoleGuard>
           }
         />
-        <Route
-          path="campaigns/new"
-          element={
-            <RoleGuard allowedRoles={['tenant_admin']}>
-              <CampaignDetailPage />
-            </RoleGuard>
-          }
-        />
+        {/** `new` vem em :campaignId — rota literal campaigns/new sem param quebrava o formulário de criação */}
         <Route
           path="campaigns/:campaignId"
           element={
