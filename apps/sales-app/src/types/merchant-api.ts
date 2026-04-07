@@ -44,6 +44,8 @@ export interface MerchantDetail {
   phone1: string | null;
   phone2: string | null;
   url: string;
+  /** URL pública do logo na lista de participantes da landing (GET após upload). */
+  landingLogoUrl?: string | null;
   status: 'ACTIVE' | 'SUSPENDED';
   location: MerchantLocation | null;
   activeNetworkIds: string[];

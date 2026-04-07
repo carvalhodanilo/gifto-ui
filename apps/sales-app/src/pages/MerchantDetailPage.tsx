@@ -11,6 +11,7 @@ import {
   updateMerchantBankAccount,
   activateMerchant,
   suspendMerchant,
+  uploadMerchantLandingLogo,
 } from '../api/merchants';
 import { formatDateTime } from '../utils/format';
 import { PageHeader } from '../components/PageHeader';
@@ -179,8 +180,10 @@ export function MerchantDetailPage() {
   const [statusToggling, setStatusToggling] = React.useState(false);
   /** Modal de confirmação: 'suspend' = Desativar, 'activate' = Ativar, null = fechado. */
   const [statusConfirmAction, setStatusConfirmAction] = React.useState<'suspend' | 'activate' | null>(null);
-  /** Logo para lista na landing — estado local; API de merchant ainda não envia arquivo. */
+  /** Ficheiro escolhido para logo na landing (envio explícito com "Enviar logo"). */
   const [landingLogoFile, setLandingLogoFile] = React.useState<File | null>(null);
+  const [landingLogoUploading, setLandingLogoUploading] = React.useState(false);
+  const [landingLogoError, setLandingLogoError] = React.useState<string | null>(null);
 
   const tenantId = tenant?.tenantId ?? '';
   const idToLoad = isNew ? '' : (merchantId ?? '');
@@ -188,6 +191,7 @@ export function MerchantDetailPage() {
 
   React.useEffect(() => {
     setLandingLogoFile(null);
+    setLandingLogoError(null);
   }, [isNew, idToLoad]);
 
   React.useEffect(() => {
@@ -257,11 +261,26 @@ export function MerchantDetailPage() {
     []
   );
 
+  const handleUploadLandingLogo = async () => {
+    if (!tenantId || !idToLoad || !landingLogoFile || !detail) return;
+    setLandingLogoUploading(true);
+    setLandingLogoError(null);
+    try {
+      await uploadMerchantLandingLogo(tenantId, idToLoad, landingLogoFile);
+      setLandingLogoFile(null);
+      const refreshed = await getMerchantById(tenantId, idToLoad);
+      setDetail(refreshed);
+    } catch (err) {
+      setLandingLogoError(err instanceof Error ? err.message : 'Erro ao enviar logo');
+    } finally {
+      setLandingLogoUploading(false);
+    }
+  };
+
   const handleSave = async () => {
     if (!tenantId) return;
     setSaving(true);
     setError(null);
-    void landingLogoFile;
     const payload: CreateMerchantPayload = {
       name: form.name,
       fantasyName: form.fantasyName || null,
@@ -868,16 +887,44 @@ export function MerchantDetailPage() {
         <section className="rounded-lg border border-border bg-card p-4">
           <h2 className="mb-3 text-sm font-semibold text-foreground">Identidade visual (landing)</h2>
           <p className="mb-4 text-sm text-muted-foreground">
-            Logo da loja na lista de participantes na landing. Ative <span className="font-medium text-foreground">Editar</span> na aba Dados da loja para alterar o arquivo.
+            Logo da loja na lista de participantes na landing. Envio em arquivo; substitui a imagem
+            anterior. Ative <span className="font-medium text-foreground">Editar</span> na aba Dados
+            da loja para escolher e enviar.
           </p>
+          {detail?.landingLogoUrl && !landingLogoFile && (
+            <div className="mb-4 space-y-2">
+              <span className="text-sm font-medium text-foreground">Logo atual</span>
+              <div className="overflow-hidden rounded-md border border-border bg-muted/30 p-2">
+                <img src={detail.landingLogoUrl} alt="" className="max-h-24 object-contain" />
+              </div>
+            </div>
+          )}
+          {landingLogoError && (
+            <StatusMessage
+              message={landingLogoError}
+              variant="error"
+              onDismiss={() => setLandingLogoError(null)}
+              className="mb-4"
+            />
+          )}
           <ImageUploadField
             variant="merchantLogo"
             id="merchant-landing-logo"
-            label="Logo da loja (lista de participantes na landing)"
+            label="Nova imagem"
             value={landingLogoFile}
             onChange={setLandingLogoFile}
-            disabled={readonly}
+            disabled={readonly || landingLogoUploading}
           />
+          <div className="mt-3">
+            <Button
+              type="button"
+              variant="brand"
+              disabled={readonly || !landingLogoFile || landingLogoUploading}
+              onClick={() => void handleUploadLandingLogo()}
+            >
+              {landingLogoUploading ? 'Enviando…' : 'Enviar logo'}
+            </Button>
+          </div>
         </section>
       )}
 

@@ -199,3 +199,27 @@ export async function suspendMerchant(
     throw new Error(text || `Erro ao suspender loja: ${res.status}`);
   }
 }
+
+/**
+ * POST /merchants/:merchantId/landing-logo — multipart field "file".
+ * Resposta: { url } (URL pública do asset).
+ */
+export async function uploadMerchantLandingLogo(
+  _tenantId: string,
+  merchantId: string,
+  file: File
+): Promise<{ url: string }> {
+  const formData = new FormData();
+  formData.append('file', file);
+  const url = apiUrl(`/merchants/${encodeURIComponent(merchantId)}/landing-logo`);
+  const res = await authFetch(url, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: formData,
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || `Erro ao enviar logo: ${res.status}`);
+  }
+  return res.json() as Promise<{ url: string }>;
+}
