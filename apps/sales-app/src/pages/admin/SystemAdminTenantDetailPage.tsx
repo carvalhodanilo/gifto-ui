@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button, cn } from '@core-ui/ui';
-import { PageHeader } from '../../components/PageHeader';
+import { PageBackControl, PageHeader } from '../../components/PageHeader';
 import { StatusMessage } from '../../components/StatusMessage';
 import { ImageUploadField } from '../../components/forms/ImageUploadField';
 import {
@@ -317,6 +317,7 @@ export function SystemAdminTenantDetailPage() {
       <PageHeader
         title="Parceiro"
         subtitle="Visualização e edição (system_admin)."
+        back={<PageBackControl onClick={() => navigate('/admin/tenants')} />}
         action={
           <div className="relative flex items-center gap-2">
             {!loading && (
@@ -759,12 +760,6 @@ export function SystemAdminTenantDetailPage() {
             )}
           </>
         )}
-      </div>
-
-      <div className="flex gap-2">
-        <Button variant="outline" onClick={() => navigate('/admin/tenants')}>
-          Voltar
-        </Button>
       </div>
     </div>
   );

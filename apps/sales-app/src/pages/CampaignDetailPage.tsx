@@ -9,7 +9,7 @@ import {
   activateCampaign,
   pauseCampaign,
 } from '../api/campaigns';
-import { PageHeader } from '../components/PageHeader';
+import { PageBackControl, PageHeader } from '../components/PageHeader';
 import { StatusMessage } from '../components/StatusMessage';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { ImageUploadField } from '../components/forms/ImageUploadField';
@@ -268,11 +268,11 @@ export function CampaignDetailPage() {
   if (!isNew && !detail && error) {
     return (
       <div className="space-y-6">
-        <PageHeader title="Campanha" />
+        <PageHeader
+          title="Campanha"
+          back={<PageBackControl onClick={() => navigate('/campaigns')} label="Voltar à listagem" />}
+        />
         <StatusMessage message={error} variant="error" />
-        <Button variant="outline" onClick={() => navigate('/campaigns')}>
-          Voltar à listagem
-        </Button>
       </div>
     );
   }
@@ -289,11 +289,9 @@ export function CampaignDetailPage() {
               ? 'Preencha os dados da campanha. Você poderá ativá-la após salvar.'
               : 'Visualize ou edite os dados da campanha.'
           }
+          back={<PageBackControl onClick={() => navigate('/campaigns')} />}
           action={
             <div className="flex flex-wrap gap-2">
-              <Button variant="outline" onClick={() => navigate('/campaigns')}>
-                Voltar
-              </Button>
               {showEditButton && (
                 <Button
                   variant="outline"

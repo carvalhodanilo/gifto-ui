@@ -14,7 +14,7 @@ import {
   uploadMerchantLandingLogo,
 } from '../api/merchants';
 import { formatDateTime } from '../utils/format';
-import { PageHeader } from '../components/PageHeader';
+import { PageBackControl, PageHeader } from '../components/PageHeader';
 import { StatusMessage } from '../components/StatusMessage';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { ImageUploadField } from '../components/forms/ImageUploadField';
@@ -379,11 +379,11 @@ export function MerchantDetailPage() {
   if (!isNew && !detail && error) {
     return (
       <div className="space-y-6">
-        <PageHeader title="Detalhes da loja" />
+        <PageHeader
+          title="Detalhes da loja"
+          back={<PageBackControl onClick={() => navigate('/merchants')} label="Voltar à listagem" />}
+        />
         <StatusMessage message={error} variant="error" />
-        <Button variant="outline" onClick={() => navigate('/merchants')}>
-          Voltar à listagem
-        </Button>
       </div>
     );
   }
@@ -397,11 +397,9 @@ export function MerchantDetailPage() {
             ? 'Preencha os dados para cadastrar uma nova loja.'
             : 'Visualize ou edite os dados da loja e a identidade visual na landing.'
         }
+        back={<PageBackControl onClick={() => navigate('/merchants')} />}
         action={
           <div className="flex flex-wrap gap-2">
-            <Button variant="outline" onClick={() => navigate('/merchants')}>
-              Voltar
-            </Button>
             {activeTab === 'dados' && (
               <>
                 {!isNew && !isEditing && (

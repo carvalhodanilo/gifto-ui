@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@core-ui/ui';
-import { PageHeader } from '../../components/PageHeader';
+import { PageBackControl, PageHeader } from '../../components/PageHeader';
 import { StatusMessage } from '../../components/StatusMessage';
 import { getMerchantsByTenantAsSystemAdmin } from '../../api/system-admin-tenants';
 import type { MerchantListItem } from '../../types/merchant-api';
@@ -78,10 +78,11 @@ export function SystemAdminTenantMerchantsPage() {
       <PageHeader
         title="Lojas do parceiro"
         subtitle="Somente leitura (system_admin)."
-        action={
-          <Button variant="outline" onClick={() => navigate(`/admin/tenants/${encodeURIComponent(id)}`)}>
-            Voltar ao parceiro
-          </Button>
+        back={
+          <PageBackControl
+            onClick={() => navigate(`/admin/tenants/${encodeURIComponent(id)}`)}
+            label="Voltar ao parceiro"
+          />
         }
       />
 

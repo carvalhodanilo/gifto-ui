@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@core-ui/ui';
-import { PageHeader } from '../../components/PageHeader';
+import { PageBackControl, PageHeader } from '../../components/PageHeader';
 import { StatusMessage } from '../../components/StatusMessage';
 import { createTenant } from '../../api/system-admin-tenants';
 import type { CreateTenantPayload } from '../../types/system-admin-tenant-api';
@@ -62,6 +62,7 @@ export function SystemAdminTenantCreatePage() {
       <PageHeader
         title="Novo parceiro"
         subtitle="Criação (system_admin)."
+        back={<PageBackControl onClick={() => navigate('/admin/tenants')} />}
         action={
           <Button
             size="lg"
