@@ -161,6 +161,8 @@ export function CampaignDetailPage() {
       form.endsAt !== isoToDateInputValue(detail.endsAt) ||
       normalizedFormExternal !== normalizedDetailExternal);
 
+  const hasNewBannerSelected = Boolean(bannerFile);
+
   const scheduleDirty =
     !!detail &&
     isDraft &&
@@ -197,7 +199,7 @@ export function CampaignDetailPage() {
     !isNew &&
     isEditing &&
     isDraft &&
-    hasFormChanges &&
+    (hasFormChanges || hasNewBannerSelected) &&
     form.name.trim() !== '' &&
     form.expirationDays >= 1 &&
     form.startsAt !== '' &&
@@ -212,16 +214,17 @@ export function CampaignDetailPage() {
     }
     setSaving(true);
     setError(null);
-    void bannerFile;
     try {
       const body = bodyFromForm(form);
       if (isNew) {
-        const newId = await createCampaign(tenantId, body);
+        const newId = await createCampaign(tenantId, body, bannerFile);
+        setBannerFile(null);
         navigate(`/campaigns/${encodeURIComponent(newId)}`, { replace: true });
         return;
       }
       if (!detail) return;
-      await updateCampaign(tenantId, detail.id, body);
+      await updateCampaign(tenantId, detail.id, body, bannerFile);
+      setBannerFile(null);
       const updated = await getCampaignById(tenantId, detail.id);
       setDetail(updated);
       setForm(formFromDetail(updated));
@@ -526,7 +529,7 @@ export function CampaignDetailPage() {
                 )}
                 {!isNew && isEditing && isDraft && !canSaveEdit && (
                   <p className="text-xs text-muted-foreground">
-                    Altere algum campo para habilitar salvar.
+                    Altere algum campo ou escolha um novo banner para salvar.
                   </p>
                 )}
               </div>

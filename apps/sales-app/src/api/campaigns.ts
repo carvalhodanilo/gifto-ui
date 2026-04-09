@@ -10,6 +10,15 @@ import type { Campaign } from '../types/voucher';
 import { authHeaders } from './authHeaders';
 import { authFetch } from './authFetch';
 
+function campaignMultipartBody(body: CreateCampaignRequest, bannerFile?: File | null): FormData {
+  const fd = new FormData();
+  fd.append('data', new Blob([JSON.stringify(body)], { type: 'application/json' }));
+  if (bannerFile) {
+    fd.append('banner', bannerFile);
+  }
+  return fd;
+}
+
 /**
  * Lista de campanhas do tenant para o seletor no modal de vendas.
  * GET {baseUrl}/campaigns
@@ -84,20 +93,19 @@ export async function getCampaignById(
 }
 
 /**
- * Cria uma campanha. POST /campaigns
+ * Cria uma campanha. POST /campaigns (multipart: JSON em `data`, ficheiro opcional em `banner`)
  * Authorization via token
  */
 export async function createCampaign(
   _tenantId: string,
-  body: CreateCampaignRequest
+  body: CreateCampaignRequest,
+  bannerFile?: File | null
 ): Promise<string> {
   const url = apiUrl('/campaigns');
   const res = await authFetch(url, {
     method: 'POST',
-    headers: authHeaders({
-      'Content-Type': 'application/json',
-    }),
-    body: JSON.stringify(body),
+    headers: authHeaders(),
+    body: campaignMultipartBody(body, bannerFile),
   });
 
   if (!res.ok) {
@@ -120,21 +128,20 @@ export async function createCampaign(
 }
 
 /**
- * Atualiza uma campanha. PUT /campaigns/{campaignId}/update
+ * Atualiza uma campanha. PUT /campaigns/{campaignId}/update (multipart como em createCampaign)
  * Authorization via token
  */
 export async function updateCampaign(
   _tenantId: string,
   campaignId: string,
-  body: CreateCampaignRequest
+  body: CreateCampaignRequest,
+  bannerFile?: File | null
 ): Promise<void> {
   const url = apiUrl(`/campaigns/${encodeURIComponent(campaignId)}/update`);
   const res = await authFetch(url, {
     method: 'PUT',
-    headers: authHeaders({
-      'Content-Type': 'application/json',
-    }),
-    body: JSON.stringify(body),
+    headers: authHeaders(),
+    body: campaignMultipartBody(body, bannerFile),
   });
 
   if (!res.ok) {
