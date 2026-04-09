@@ -78,12 +78,7 @@ export function SystemAdminTenantMerchantsPage() {
       <PageHeader
         title="Lojas do parceiro"
         subtitle="Somente leitura (system_admin)."
-        back={
-          <PageBackControl
-            onClick={() => navigate(`/admin/tenants/${encodeURIComponent(id)}`)}
-            label="Voltar ao parceiro"
-          />
-        }
+        back={<PageBackControl onClick={() => navigate(`/admin/tenants/${encodeURIComponent(id)}`)} />}
       />
 
       <form onSubmit={handleSearchSubmit} className="flex flex-wrap items-end gap-2">

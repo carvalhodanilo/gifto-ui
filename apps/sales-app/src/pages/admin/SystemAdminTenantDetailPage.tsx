@@ -1,6 +1,8 @@
 import * as React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button, cn } from '@core-ui/ui';
+import type { PageActionItem } from '../../components/PageActionsDropdown';
+import { PageActionsDropdown } from '../../components/PageActionsDropdown';
 import { PageBackControl, PageHeader } from '../../components/PageHeader';
 import { StatusMessage } from '../../components/StatusMessage';
 import { ImageUploadField } from '../../components/forms/ImageUploadField';
@@ -25,7 +27,6 @@ import {
 } from '../../config/mock-tenant';
 import { hexForColorInput, normalizeColorInput } from '../../utils/brandColors';
 
-type ActionMenuState = 'closed' | 'open';
 type TenantDetailTab = 'dados' | 'identidade' | 'bank';
 
 const ACCOUNT_TYPE_OPTIONS: { value: BankAccountType; label: string }[] = [
@@ -124,7 +125,6 @@ export function SystemAdminTenantDetailPage() {
   const [error, setError] = React.useState<string | null>(null);
   const [saving, setSaving] = React.useState(false);
   const [isEditing, setIsEditing] = React.useState(false);
-  const [menu, setMenu] = React.useState<ActionMenuState>('closed');
   const [activeTab, setActiveTab] = React.useState<TenantDetailTab>('dados');
   const [logoFile, setLogoFile] = React.useState<File | null>(null);
   const [logoUploading, setLogoUploading] = React.useState(false);
@@ -296,11 +296,6 @@ export function SystemAdminTenantDetailPage() {
     }
   };
 
-  const goToMerchants = () => {
-    setMenu('closed');
-    navigate(`/admin/tenants/${encodeURIComponent(id)}/merchants`);
-  };
-
   const currentLogoUrl = detail?.logoUrl ?? null;
   const bankReadonly = !bankEditing;
   /** Enquanto carrega ou sem detalhe, não liberar abas que exigem cadastro persistido. */
@@ -312,6 +307,31 @@ export function SystemAdminTenantDetailPage() {
     }
   }, [canOpenBankAndIdentity, activeTab]);
 
+  const tenantActionItems = React.useMemo((): PageActionItem[] => {
+    if (loading || !detail) return [];
+    const items: PageActionItem[] = [];
+    if (activeTab === 'dados' && !isEditing) {
+      items.push({ label: 'Editar', onClick: () => setIsEditing(true) });
+    }
+    if (activeTab === 'bank' && canOpenBankAndIdentity && !bankEditing) {
+      items.push({ label: 'Editar', onClick: () => setBankEditing(true) });
+    }
+    items.push({
+      label: 'Ver lojas',
+      onClick: () => navigate(`/admin/tenants/${encodeURIComponent(id)}/merchants`),
+    });
+    return items;
+  }, [
+    loading,
+    detail,
+    activeTab,
+    isEditing,
+    bankEditing,
+    canOpenBankAndIdentity,
+    id,
+    navigate,
+  ]);
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -319,81 +339,21 @@ export function SystemAdminTenantDetailPage() {
         subtitle="Visualização e edição (system_admin)."
         back={<PageBackControl onClick={() => navigate('/admin/tenants')} />}
         action={
-          <div className="relative flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {!loading && (
               <>
-                {activeTab === 'dados' && (
-                  <>
-                    {!isEditing ? (
-                      <Button
-                        size="lg"
-                        variant="brand"
-                        onClick={() => setIsEditing(true)}
-                      >
-                        Editar
-                      </Button>
-                    ) : (
-                      <Button
-                        size="lg"
-                        variant="brand"
-                        onClick={handleSave}
-                        disabled={saving}
-                      >
-                        {saving ? 'Salvando…' : 'Salvar'}
-                      </Button>
-                    )}
-                  </>
+                {activeTab === 'dados' && isEditing && (
+                  <Button size="lg" variant="brand" onClick={handleSave} disabled={saving}>
+                    {saving ? 'Salvando…' : 'Salvar'}
+                  </Button>
                 )}
-                {activeTab === 'bank' && canOpenBankAndIdentity && (
-                  <>
-                    {!bankEditing && (
-                      <Button
-                        size="lg"
-                        variant="outline"
-                        onClick={() => setBankEditing(true)}
-                        className="border-[var(--brand-primary)] text-[var(--brand-primary)]"
-                      >
-                        Editar
-                      </Button>
-                    )}
-                    {bankEditing && (
-                      <Button
-                        size="lg"
-                        variant="brand"
-                        onClick={handleSaveBank}
-                        disabled={bankSaving}
-                      >
-                        {bankSaving ? 'Salvando…' : 'Salvar'}
-                      </Button>
-                    )}
-                  </>
+                {activeTab === 'bank' && canOpenBankAndIdentity && bankEditing && (
+                  <Button size="lg" variant="brand" onClick={handleSaveBank} disabled={bankSaving}>
+                    {bankSaving ? 'Salvando…' : 'Salvar'}
+                  </Button>
                 )}
-                <Button
-                  size="lg"
-                  variant="outline"
-                  onClick={() => setMenu((m) => (m === 'open' ? 'closed' : 'open'))}
-                  aria-haspopup="menu"
-                  aria-expanded={menu === 'open'}
-                >
-                  ⋯
-                </Button>
+                <PageActionsDropdown size="lg" items={tenantActionItems} />
               </>
-            )}
-
-            {menu === 'open' && (
-              <div
-                role="menu"
-                className="absolute right-0 top-12 z-10 w-52 overflow-hidden rounded-md border border-border bg-background shadow-md"
-              >
-                <button
-                  type="button"
-                  role="menuitem"
-                  className="w-full px-3 py-2 text-left text-sm hover:bg-muted"
-                  onClick={goToMerchants}
-                >
-                  Ver lojas
-                </button>
-              </div>
             )}
           </div>
         }

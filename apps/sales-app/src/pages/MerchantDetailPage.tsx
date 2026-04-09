@@ -14,6 +14,8 @@ import {
   uploadMerchantLandingLogo,
 } from '../api/merchants';
 import { formatDateTime } from '../utils/format';
+import type { PageActionItem } from '../components/PageActionsDropdown';
+import { PageActionsDropdown } from '../components/PageActionsDropdown';
 import { PageBackControl, PageHeader } from '../components/PageHeader';
 import { StatusMessage } from '../components/StatusMessage';
 import { ConfirmDialog } from '../components/ConfirmDialog';
@@ -367,6 +369,31 @@ export function MerchantDetailPage() {
   const readonly = !isEditing;
   const bankReadonly = !bankEditing;
 
+  const merchantActionItems = React.useMemo((): PageActionItem[] => {
+    const items: PageActionItem[] = [];
+    if (activeTab === 'dados' && !isNew && !isEditing && detail) {
+      items.push({ label: 'Editar', onClick: () => setIsEditing(true) });
+      if (detail.status === 'ACTIVE') {
+        items.push({
+          label: 'Desativar',
+          onClick: () => setStatusConfirmAction('suspend'),
+          disabled: statusToggling,
+          destructive: true,
+        });
+      } else {
+        items.push({
+          label: 'Ativar',
+          onClick: () => setStatusConfirmAction('activate'),
+          disabled: statusToggling,
+        });
+      }
+    }
+    if (activeTab === 'bank' && hasSavedMerchantId && !bankEditing) {
+      items.push({ label: 'Editar', onClick: () => setBankEditing(true) });
+    }
+    return items;
+  }, [activeTab, isNew, isEditing, detail, hasSavedMerchantId, bankEditing, statusToggling]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -381,7 +408,7 @@ export function MerchantDetailPage() {
       <div className="space-y-6">
         <PageHeader
           title="Detalhes da loja"
-          back={<PageBackControl onClick={() => navigate('/merchants')} label="Voltar à listagem" />}
+          back={<PageBackControl onClick={() => navigate('/merchants')} />}
         />
         <StatusMessage message={error} variant="error" />
       </div>
@@ -399,72 +426,18 @@ export function MerchantDetailPage() {
         }
         back={<PageBackControl onClick={() => navigate('/merchants')} />}
         action={
-          <div className="flex flex-wrap gap-2">
-            {activeTab === 'dados' && (
-              <>
-                {!isNew && !isEditing && (
-                  <Button
-                    variant="outline"
-                    onClick={() => setIsEditing(true)}
-                    className="border-[var(--brand-primary)] text-[var(--brand-primary)]"
-                  >
-                    Editar
-                  </Button>
-                )}
-                {!isNew && !isEditing && detail && (
-                  detail.status === 'ACTIVE' ? (
-                    <Button
-                      variant="outline"
-                      onClick={() => setStatusConfirmAction('suspend')}
-                      disabled={statusToggling}
-                      className="border-destructive text-destructive hover:bg-destructive/10"
-                    >
-                      {statusToggling ? '...' : 'Desativar'}
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="outline"
-                      onClick={() => setStatusConfirmAction('activate')}
-                      disabled={statusToggling}
-                      className="border-[var(--brand-primary)] text-[var(--brand-primary)]"
-                    >
-                      {statusToggling ? '...' : 'Ativar'}
-                    </Button>
-                  )
-                )}
-                {(isEditing || isNew) && (
-                  <Button
-                    onClick={handleSave}
-                    disabled={saving}
-                    variant="brand"
-                  >
-                    {saving ? 'Salvando...' : 'Salvar'}
-                  </Button>
-                )}
-              </>
+          <div className="flex flex-wrap items-center gap-2">
+            {activeTab === 'dados' && (isEditing || isNew) && (
+              <Button onClick={handleSave} disabled={saving} variant="brand">
+                {saving ? 'Salvando...' : 'Salvar'}
+              </Button>
             )}
-            {activeTab === 'bank' && hasSavedMerchantId && (
-              <>
-                {!bankEditing && (
-                  <Button
-                    variant="outline"
-                    onClick={() => setBankEditing(true)}
-                    className="border-[var(--brand-primary)] text-[var(--brand-primary)]"
-                  >
-                    Editar
-                  </Button>
-                )}
-                {bankEditing && (
-                  <Button
-                    onClick={handleSaveBank}
-                    disabled={bankSaving}
-                    variant="brand"
-                  >
-                    {bankSaving ? 'Salvando...' : 'Salvar'}
-                  </Button>
-                )}
-              </>
+            {activeTab === 'bank' && hasSavedMerchantId && bankEditing && (
+              <Button onClick={handleSaveBank} disabled={bankSaving} variant="brand">
+                {bankSaving ? 'Salvando...' : 'Salvar'}
+              </Button>
             )}
+            <PageActionsDropdown items={merchantActionItems} />
           </div>
         }
       />

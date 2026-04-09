@@ -13,13 +13,12 @@ interface PageHeaderProps {
 
 interface PageBackControlProps {
   onClick: () => void;
-  label?: string;
 }
 
 /**
  * Controle compacto de voltar para usar em `PageHeader` (`back={...}`).
  */
-export function PageBackControl({ onClick, label = 'Voltar' }: PageBackControlProps) {
+export function PageBackControl({ onClick }: PageBackControlProps) {
   return (
     <Button
       type="button"
@@ -29,7 +28,7 @@ export function PageBackControl({ onClick, label = 'Voltar' }: PageBackControlPr
       onClick={onClick}
     >
       <ChevronLeft className="h-4 w-4 shrink-0" aria-hidden />
-      {label}
+      Voltar
     </Button>
   );
 }

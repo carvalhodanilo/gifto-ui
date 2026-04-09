@@ -9,6 +9,8 @@ import {
   activateCampaign,
   pauseCampaign,
 } from '../api/campaigns';
+import type { PageActionItem } from '../components/PageActionsDropdown';
+import { PageActionsDropdown } from '../components/PageActionsDropdown';
 import { PageBackControl, PageHeader } from '../components/PageHeader';
 import { StatusMessage } from '../components/StatusMessage';
 import { ConfirmDialog } from '../components/ConfirmDialog';
@@ -257,6 +259,42 @@ export function CampaignDetailPage() {
     }
   };
 
+  const campaignActionItems = React.useMemo((): PageActionItem[] => {
+    if (isNew || !detail) return [];
+    if (isEditing && isDraft) return [];
+    const items: PageActionItem[] = [];
+    if (showEditButton) {
+      items.push({ label: 'Editar', onClick: () => setIsEditing(true) });
+    }
+    if (showActivate) {
+      items.push({
+        label: 'Ativar',
+        onClick: () => setConfirm('activate'),
+        disabled: actionLoading || !!activateBlockedReason,
+        title: activateBlockedReason ?? undefined,
+      });
+    }
+    if (showPauseOnly) {
+      items.push({
+        label: 'Pausar',
+        onClick: () => setConfirm('pause'),
+        disabled: actionLoading,
+        destructive: true,
+      });
+    }
+    return items;
+  }, [
+    isNew,
+    detail,
+    isEditing,
+    isDraft,
+    showEditButton,
+    showActivate,
+    showPauseOnly,
+    actionLoading,
+    activateBlockedReason,
+  ]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -270,7 +308,7 @@ export function CampaignDetailPage() {
       <div className="space-y-6">
         <PageHeader
           title="Campanha"
-          back={<PageBackControl onClick={() => navigate('/campaigns')} label="Voltar à listagem" />}
+          back={<PageBackControl onClick={() => navigate('/campaigns')} />}
         />
         <StatusMessage message={error} variant="error" />
       </div>
@@ -291,37 +329,7 @@ export function CampaignDetailPage() {
           }
           back={<PageBackControl onClick={() => navigate('/campaigns')} />}
           action={
-            <div className="flex flex-wrap gap-2">
-              {showEditButton && (
-                <Button
-                  variant="outline"
-                  onClick={() => setIsEditing(true)}
-                  className="border-[var(--brand-primary)] text-[var(--brand-primary)]"
-                >
-                  Editar
-                </Button>
-              )}
-              {!isNew && !isEditing && detail && showActivate && (
-                <Button
-                  variant="outline"
-                  onClick={() => setConfirm('activate')}
-                  disabled={actionLoading || !!activateBlockedReason}
-                  className="border-[var(--brand-primary)] text-[var(--brand-primary)]"
-                  title={activateBlockedReason ?? undefined}
-                >
-                  Ativar
-                </Button>
-              )}
-              {!isNew && !isEditing && detail && showPauseOnly && (
-                <Button
-                  variant="outline"
-                  onClick={() => setConfirm('pause')}
-                  disabled={actionLoading}
-                  className="border-destructive text-destructive hover:bg-destructive/10"
-                >
-                  Pausar
-                </Button>
-              )}
+            <div className="flex flex-wrap items-center gap-2">
               {(isNew || (isEditing && isDraft)) && (
                 <Button
                   onClick={handleSave}
@@ -331,6 +339,7 @@ export function CampaignDetailPage() {
                   {saving ? 'Salvando…' : isNew ? 'Criar campanha' : 'Salvar'}
                 </Button>
               )}
+              <PageActionsDropdown items={campaignActionItems} />
             </div>
           }
         />
