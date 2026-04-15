@@ -38,14 +38,7 @@ function AuthenticatedRoutes() {
         }
       >
         <Route index element={<Navigate to="/dashboard" replace />} />
-        <Route
-          path="dashboard"
-          element={
-            <RoleGuard allowedRoles={['tenant_admin']}>
-              <DashboardPage />
-            </RoleGuard>
-          }
-        />
+        <Route path="dashboard" element={<DashboardPage />} />
         <Route
           path="sales"
           element={

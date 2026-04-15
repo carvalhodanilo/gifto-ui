@@ -13,7 +13,6 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { useSidebarCollapse } from '../contexts/SidebarCollapseContext';
 
 export interface SidebarMenuItem {
   to: string;
@@ -29,21 +28,13 @@ export interface SidebarMenuItem {
 }
 
 const defaultItems: SidebarMenuItem[] = [
-  // Sales -> Dashboard: tenant_admin
-  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, end: true, allowedRoles: ['tenant_admin'] },
-  // Sales -> Vendas: tenant_admin e tenant_operator
+  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, end: true },
   { to: '/sales', label: 'Vendas', icon: Ticket, allowedRoles: ['tenant_admin', 'tenant_operator'] },
-  // Sales -> Campanhas: tenant_admin
   { to: '/campaigns', label: 'Campanhas', icon: Megaphone, allowedRoles: ['tenant_admin'] },
-  // Merchant -> Resgate: merchant_admin e merchant_operator
   { to: '/redeem', label: 'Resgate', icon: Gift, allowedRoles: ['merchant_admin', 'merchant_operator'] },
-  // Merchant -> Histórico: merchant_admin e merchant_operator
   { to: '/history', label: 'Histórico', icon: History, allowedRoles: ['merchant_admin', 'merchant_operator'] },
-  // Sales -> Liquidação: system_admin
   { to: '/settlement', label: 'Liquidação', icon: FileText, allowedRoles: ['system_admin'] },
-  // Admin -> Parceiros (tenants na API): system_admin
   { to: '/admin/tenants', label: 'Parceiros', icon: Building2, allowedRoles: ['system_admin'] },
-  // Sales -> Lojas: tenant_admin
   { to: '/merchants', label: 'Lojas', icon: Store, allowedRoles: ['tenant_admin'] },
 ];
 
@@ -52,12 +43,29 @@ interface SidebarMenuProps {
   className?: string;
 }
 
+function useIsDesktopMinMd(): boolean {
+  const [desktop, setDesktop] = React.useState(() =>
+    typeof window !== 'undefined' ? window.matchMedia('(min-width: 768px)').matches : true
+  );
+
+  React.useEffect(() => {
+    const mq = window.matchMedia('(min-width: 768px)');
+    const sync = () => setDesktop(mq.matches);
+    sync();
+    mq.addEventListener('change', sync);
+    return () => mq.removeEventListener('change', sync);
+  }, []);
+
+  return desktop;
+}
+
 /**
- * Sidebar navigation menu. Uses NavLink for active state.
+ * Sidebar: em desktop (md+), recolhida por padrão e expande com hover; no mobile, sempre com rótulos.
  */
 export function SidebarMenu({ items = defaultItems, className }: SidebarMenuProps) {
   const { roles } = useAuth();
-  const { collapsed } = useSidebarCollapse();
+  const isDesktop = useIsDesktopMinMd();
+  const [hoverOpen, setHoverOpen] = React.useState(false);
 
   const visibleItems = React.useMemo(() => {
     return items.filter((item) => {
@@ -66,14 +74,17 @@ export function SidebarMenu({ items = defaultItems, className }: SidebarMenuProp
     });
   }, [items, roles]);
 
+  const collapsed = isDesktop && !hoverOpen;
+
   return (
     <aside
       className={cn(
-        // Recolhida = só ícones; expandida = ícones + rótulos.
         collapsed ? 'w-14 p-2' : 'w-52 p-3',
         'shrink-0 bg-card/50 transition-[width,padding] duration-200',
         className
       )}
+      onMouseEnter={() => isDesktop && setHoverOpen(true)}
+      onMouseLeave={() => isDesktop && setHoverOpen(false)}
     >
       <nav className={cn('flex flex-col gap-0.5', collapsed && 'items-stretch')}>
         {visibleItems.map(({ to, label, icon: Icon, end }) => (
