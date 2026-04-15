@@ -13,22 +13,36 @@ const STORAGE_KEY = 'sales-app.sidebar.collapsed';
 function getInitialCollapsed(): boolean {
   if (typeof window === 'undefined') return false;
 
+  const mobile = window.matchMedia?.('(max-width: 767px)').matches ?? false;
+  // Desktop (md+): sempre expandido ao carregar, com nomes visíveis (evita ficar preso em
+  // `collapsed` vindo do mobile ou de sessão antiga, já que o toggle era só no mobile).
+  if (!mobile) return false;
+
   const stored = window.localStorage.getItem(STORAGE_KEY);
   if (stored === 'true') return true;
   if (stored === 'false') return false;
 
-  // Intenção: mobile-first. Se o usuário nunca escolheu, começamos recolhido no mobile
-  // para não consumir largura da tela.
-  return window.matchMedia?.('(max-width: 768px)').matches ?? false;
+  return true;
 }
 
 /**
  * Estado compartilhado de recolher/expandir a sidebar.
- * - Mobile-first: por padrão a sidebar inicia recolhida em telas pequenas.
- * - Persistido em `localStorage` para manter a preferência do usuário.
+ * - Mobile: padrão recolhido; preferência persistida em `localStorage`.
+ * - Desktop (768px+): inicia expandido (rótulos visíveis); ao redimensionar para desktop, expande.
  */
 export function SidebarCollapseProvider({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsedState] = React.useState<boolean>(() => getInitialCollapsed());
+
+  /** Ao passar para viewport desktop, expandir para liberar rótulos do menu. */
+  React.useEffect(() => {
+    const mq = window.matchMedia('(min-width: 768px)');
+    const onChange = () => {
+      if (mq.matches) setCollapsedState(false);
+    };
+    onChange();
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
 
   const setCollapsed = React.useCallback((value: boolean) => {
     setCollapsedState(value);

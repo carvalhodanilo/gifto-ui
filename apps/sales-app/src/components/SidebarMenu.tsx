@@ -69,7 +69,7 @@ export function SidebarMenu({ items = defaultItems, className }: SidebarMenuProp
   return (
     <aside
       className={cn(
-        // Desktop mantém layout atual; no mobile, recolhida = compacta (ícones).
+        // Recolhida = só ícones; expandida = ícones + rótulos.
         collapsed ? 'w-14 p-2' : 'w-52 p-3',
         'shrink-0 bg-card/50 transition-[width,padding] duration-200',
         className

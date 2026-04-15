@@ -21,14 +21,14 @@ export function TopBar() {
   };
 
   return (
-    <header className="flex h-14 shrink-0 items-center justify-between bg-card px-4 shadow-sm">
+    <header className="flex h-14 shrink-0 items-center justify-between bg-card px-5 shadow-sm">
       <div className="flex items-center gap-2">
-        {/* Mobile-first: no celular a sidebar começa recolhida; esse botão alterna expandir/recolher. */}
+        {/* Alterna sidebar em qualquer largura (no desktop o estado inicia expandido). */}
         <Button
           type="button"
           variant="ghost"
           size="sm"
-          className="md:hidden h-9 w-9 p-0 text-muted-foreground hover:text-foreground"
+          className="h-9 w-9 shrink-0 p-0 text-muted-foreground hover:text-foreground"
           onClick={toggleCollapsed}
           aria-label={collapsed ? 'Expandir menu lateral' : 'Recolher menu lateral'}
         >
