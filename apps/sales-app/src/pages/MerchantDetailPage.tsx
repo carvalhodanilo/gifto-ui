@@ -176,13 +176,13 @@ export function MerchantDetailPage() {
   const [bankLoading, setBankLoading] = React.useState(false);
   const [bankError, setBankError] = React.useState<string | null>(null);
   const [bankSaving, setBankSaving] = React.useState(false);
-  /** Na aba bancária: campos travados até clicar em Editar (mesmo fluxo da aba anterior). */
-  const [bankEditing, setBankEditing] = React.useState(false);
+  /** Snapshot do backend para detectar alterações antes de salvar. */
+  const [bankPersisted, setBankPersisted] = React.useState<MerchantBankAccount | null>(null);
   /** Loading do botão Desativar/Ativar (POST activate ou suspend). */
   const [statusToggling, setStatusToggling] = React.useState(false);
   /** Modal de confirmação: 'suspend' = Desativar, 'activate' = Ativar, null = fechado. */
   const [statusConfirmAction, setStatusConfirmAction] = React.useState<'suspend' | 'activate' | null>(null);
-  /** Ficheiro escolhido para logo na landing (envio explícito com "Enviar logo"). */
+  /** Ficheiro escolhido para logo na landing (salvo via botão global). */
   const [landingLogoFile, setLandingLogoFile] = React.useState<File | null>(null);
   const [landingLogoUploading, setLandingLogoUploading] = React.useState(false);
   const [landingLogoError, setLandingLogoError] = React.useState<string | null>(null);
@@ -230,9 +230,11 @@ export function MerchantDetailPage() {
     setBankError(null);
     getMerchantBankAccount(tenantId, idToLoad)
       .then((data) => {
+        setBankPersisted(data);
         setBankForm(bankFormFromAccount(data));
       })
       .catch((err) => {
+        setBankPersisted(null);
         setBankForm(emptyBankForm);
         // 404 = conta não cadastrada; exibir formulário vazio sem erro. Outros erros mostram mensagem.
         const is404 =
@@ -263,26 +265,11 @@ export function MerchantDetailPage() {
     []
   );
 
-  const handleUploadLandingLogo = async () => {
-    if (!tenantId || !idToLoad || !landingLogoFile || !detail) return;
-    setLandingLogoUploading(true);
-    setLandingLogoError(null);
-    try {
-      await uploadMerchantLandingLogo(tenantId, idToLoad, landingLogoFile);
-      setLandingLogoFile(null);
-      const refreshed = await getMerchantById(tenantId, idToLoad);
-      setDetail(refreshed);
-    } catch (err) {
-      setLandingLogoError(err instanceof Error ? err.message : 'Erro ao enviar logo');
-    } finally {
-      setLandingLogoUploading(false);
-    }
-  };
-
   const handleSave = async () => {
     if (!tenantId) return;
     setSaving(true);
     setError(null);
+    setLandingLogoError(null);
     const payload: CreateMerchantPayload = {
       name: form.name,
       fantasyName: form.fantasyName || null,
@@ -297,14 +284,64 @@ export function MerchantDetailPage() {
     try {
       if (isNew) {
         await createMerchant(tenantId, payload);
-      } else if (detail) {
-        await updateMerchant(tenantId, detail.merchantId, payload);
+        navigate('/merchants', { replace: true });
+        return;
       }
-      navigate('/merchants', { replace: true });
+      if (!detail) return;
+
+      /**
+       * Salvar é GLOBAL nesta tela (Dados + Banco + Identidade visual).
+       * Hoje chamamos múltiplos endpoints; no futuro devemos unificar em um único endpoint de update.
+       */
+      await updateMerchant(tenantId, detail.merchantId, payload);
+
+      // Banco (endpoint separado; não sobrescrever se não houve mudanças)
+      const bankDirty = (() => {
+        const persisted = bankPersisted ? bankFormFromAccount(bankPersisted) : emptyBankForm;
+        return JSON.stringify(persisted) !== JSON.stringify(bankForm);
+      })();
+      if (hasSavedMerchantId && bankDirty) {
+        setBankSaving(true);
+        const bankPayload: UpdateBankAccountPayload = {
+          bankCode: bankForm.bankCode || undefined,
+          bankName: bankForm.bankName || undefined,
+          branch: bankForm.branch || undefined,
+          accountNumber: bankForm.accountNumber || undefined,
+          accountDigit: bankForm.accountDigit || undefined,
+          accountType: bankForm.accountType,
+          holderName: bankForm.holderName || undefined,
+          holderDocument: bankForm.holderDocument || undefined,
+          pixKeyType: bankForm.pixKeyType || undefined,
+          pixKeyValue: bankForm.pixKeyValue || undefined,
+        };
+        await updateMerchantBankAccount(tenantId, idToLoad, bankPayload);
+        const updatedBank = await getMerchantBankAccount(tenantId, idToLoad);
+        setBankPersisted(updatedBank);
+        setBankForm(bankFormFromAccount(updatedBank));
+      }
+
+      // Logo (endpoint separado; só enviar se tiver ficheiro)
+      if (landingLogoFile) {
+        setLandingLogoUploading(true);
+        try {
+          await uploadMerchantLandingLogo(tenantId, idToLoad, landingLogoFile);
+          setLandingLogoFile(null);
+        } catch (err) {
+          setLandingLogoError(err instanceof Error ? err.message : 'Erro ao enviar logo');
+        } finally {
+          setLandingLogoUploading(false);
+        }
+      }
+
+      const refreshed = await getMerchantById(tenantId, idToLoad);
+      setDetail(refreshed);
+      setForm(formStateFromDetail(refreshed));
+      setIsEditing(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao salvar');
     } finally {
       setSaving(false);
+      setBankSaving(false);
     }
   };
 
@@ -314,35 +351,6 @@ export function MerchantDetailPage() {
   ) => {
     setBankForm((prev) => ({ ...prev, [key]: value }));
   }, []);
-
-  /** Salvar dados bancários (PUT em endpoint separado para permissionamento futuro). */
-  const handleSaveBank = async () => {
-    if (!tenantId || !idToLoad) return;
-    setBankSaving(true);
-    setBankError(null);
-    const payload: UpdateBankAccountPayload = {
-      bankCode: bankForm.bankCode || undefined,
-      bankName: bankForm.bankName || undefined,
-      branch: bankForm.branch || undefined,
-      accountNumber: bankForm.accountNumber || undefined,
-      accountDigit: bankForm.accountDigit || undefined,
-      accountType: bankForm.accountType,
-      holderName: bankForm.holderName || undefined,
-      holderDocument: bankForm.holderDocument || undefined,
-      pixKeyType: bankForm.pixKeyType || undefined,
-      pixKeyValue: bankForm.pixKeyValue || undefined,
-    };
-    try {
-      await updateMerchantBankAccount(tenantId, idToLoad, payload);
-      const updated = await getMerchantBankAccount(tenantId, idToLoad);
-      setBankForm(bankFormFromAccount(updated));
-      setBankEditing(false);
-    } catch (err) {
-      setBankError(err instanceof Error ? err.message : 'Erro ao salvar dados bancários');
-    } finally {
-      setBankSaving(false);
-    }
-  };
 
   /** Chamado ao confirmar no modal: executa activate ou suspend e recarrega detalhes. */
   const handleStatusToggleConfirm = async () => {
@@ -367,11 +375,11 @@ export function MerchantDetailPage() {
   };
 
   const readonly = !isEditing;
-  const bankReadonly = !bankEditing;
+  const bankReadonly = !isEditing;
 
   const merchantActionItems = React.useMemo((): PageActionItem[] => {
     const items: PageActionItem[] = [];
-    if (activeTab === 'dados' && !isNew && !isEditing && detail) {
+    if (!isNew && !isEditing && detail) {
       items.push({ label: 'Editar', onClick: () => setIsEditing(true) });
       if (detail.status === 'ACTIVE') {
         items.push({
@@ -388,11 +396,8 @@ export function MerchantDetailPage() {
         });
       }
     }
-    if (activeTab === 'bank' && hasSavedMerchantId && !bankEditing) {
-      items.push({ label: 'Editar', onClick: () => setBankEditing(true) });
-    }
     return items;
-  }, [activeTab, isNew, isEditing, detail, hasSavedMerchantId, bankEditing, statusToggling]);
+  }, [isNew, isEditing, detail, statusToggling]);
 
   if (loading) {
     return (
@@ -427,14 +432,9 @@ export function MerchantDetailPage() {
         back={<PageBackControl onClick={() => navigate('/merchants')} />}
         action={
           <div className="flex flex-wrap items-center gap-2">
-            {activeTab === 'dados' && (isEditing || isNew) && (
-              <Button onClick={handleSave} disabled={saving} variant="brand">
+            {(isEditing || isNew) && (
+              <Button onClick={handleSave} disabled={saving || bankSaving || landingLogoUploading} variant="brand">
                 {saving ? 'Salvando...' : 'Salvar'}
-              </Button>
-            )}
-            {activeTab === 'bank' && hasSavedMerchantId && bankEditing && (
-              <Button onClick={handleSaveBank} disabled={bankSaving} variant="brand">
-                {bankSaving ? 'Salvando...' : 'Salvar'}
               </Button>
             )}
             <PageActionsDropdown items={merchantActionItems} />
@@ -858,9 +858,8 @@ export function MerchantDetailPage() {
         <section className="rounded-lg border border-border bg-card p-4">
           <h2 className="mb-3 text-sm font-semibold text-foreground">Identidade visual (landing)</h2>
           <p className="mb-4 text-sm text-muted-foreground">
-            Logo da loja na lista de participantes na landing. Envio em arquivo; substitui a imagem
-            anterior. Ative <span className="font-medium text-foreground">Editar</span> na aba Dados
-            da loja para escolher e enviar.
+            Logo da loja na lista de participantes na landing. Ao salvar, a imagem escolhida substitui
+            a anterior.
           </p>
           {detail?.landingLogoUrl && !landingLogoFile && (
             <div className="mb-4 space-y-2">
@@ -886,16 +885,6 @@ export function MerchantDetailPage() {
             onChange={setLandingLogoFile}
             disabled={readonly || landingLogoUploading}
           />
-          <div className="mt-3">
-            <Button
-              type="button"
-              variant="brand"
-              disabled={readonly || !landingLogoFile || landingLogoUploading}
-              onClick={() => void handleUploadLandingLogo()}
-            >
-              {landingLogoUploading ? 'Enviando…' : 'Enviar logo'}
-            </Button>
-          </div>
         </section>
       )}
 

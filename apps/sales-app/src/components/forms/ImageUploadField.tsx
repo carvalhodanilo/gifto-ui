@@ -13,6 +13,8 @@ export type ImageUploadFieldProps = {
   label: string;
   value: File | null;
   onChange: (file: File | null) => void;
+  /** URL já persistida no backend para preview (quando nenhum ficheiro novo foi escolhido). */
+  currentUrl?: string | null;
   disabled?: boolean;
   className?: string;
 };
@@ -32,6 +34,7 @@ export function ImageUploadField({
   label,
   value,
   onChange,
+  currentUrl = null,
   disabled = false,
   className,
 }: ImageUploadFieldProps) {
@@ -116,7 +119,7 @@ export function ImageUploadField({
 
       {localError && <p className="text-sm text-destructive">{localError}</p>}
 
-      {previewUrl && (
+      {(previewUrl || currentUrl) && (
         <div
           className={cn(
             'overflow-hidden rounded-md border border-border bg-muted/30',
@@ -124,7 +127,7 @@ export function ImageUploadField({
           )}
         >
           <img
-            src={previewUrl}
+            src={previewUrl ?? currentUrl ?? ''}
             alt=""
             className={cn('object-contain', previewMaxClass[variant])}
           />

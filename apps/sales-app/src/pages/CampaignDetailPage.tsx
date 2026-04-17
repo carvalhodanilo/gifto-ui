@@ -521,6 +521,7 @@ export function CampaignDetailPage() {
                 label="Banner da campanha (landing)"
                 value={bannerFile}
                 onChange={setBannerFile}
+                currentUrl={detail?.bannerUrl ?? null}
                 disabled={saving || readonlyFields}
               />
             </section>

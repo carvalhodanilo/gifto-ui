@@ -136,10 +136,10 @@ export function SystemAdminTenantDetailPage() {
   const [brandColorOk, setBrandColorOk] = React.useState(false);
 
   const [bankForm, setBankForm] = React.useState<BankFormState>(emptyBankForm);
+  const [bankPersisted, setBankPersisted] = React.useState<BankFormState>(emptyBankForm);
   const [bankLoading, setBankLoading] = React.useState(false);
   const [bankError, setBankError] = React.useState<string | null>(null);
   const [bankSaving, setBankSaving] = React.useState(false);
-  const [bankEditing, setBankEditing] = React.useState(false);
 
   React.useEffect(() => {
     if (!id) {
@@ -169,7 +169,6 @@ export function SystemAdminTenantDetailPage() {
     setBrandColorError(null);
     setBrandColorOk(false);
     setBankForm(emptyBankForm);
-    setBankEditing(false);
     setBankError(null);
   }, [id]);
 
@@ -186,9 +185,12 @@ export function SystemAdminTenantDetailPage() {
     setBankError(null);
     getTenantBankAccount(id)
       .then((data) => {
-        setBankForm(bankFormFromTenantApi(data));
+        const mapped = bankFormFromTenantApi(data);
+        setBankPersisted(mapped);
+        setBankForm(mapped);
       })
       .catch((err) => {
+        setBankPersisted(emptyBankForm);
         setBankForm(emptyBankForm);
         const is404 =
           err instanceof Error && 'message' in err && String(err.message).includes('404');
@@ -211,7 +213,15 @@ export function SystemAdminTenantDetailPage() {
     if (!id) return;
     setSaving(true);
     setError(null);
+    setBankError(null);
+    setLogoError(null);
+    setBrandColorError(null);
+    setBrandColorOk(false);
     try {
+      /**
+       * Salvar é GLOBAL nesta tela (Dados + Banco + Identidade visual).
+       * Hoje chamamos múltiplos endpoints; no futuro devemos unificar em um único endpoint de update.
+       */
       await updateTenant(id, {
         name: form.name,
         fantasyName: form.fantasyName ?? null,
@@ -220,84 +230,69 @@ export function SystemAdminTenantDetailPage() {
         email: form.email,
         url: form.url,
       });
+
+      // Banco (endpoint separado)
+      const bankDirty = JSON.stringify(bankPersisted) !== JSON.stringify(bankForm);
+      if (canOpenBankAndIdentity && bankDirty) {
+        setBankSaving(true);
+        const payload: UpdateBankAccountPayload = {
+          bankCode: bankForm.bankCode || undefined,
+          bankName: bankForm.bankName || undefined,
+          branch: bankForm.branch || undefined,
+          accountNumber: bankForm.accountNumber || undefined,
+          accountDigit: bankForm.accountDigit || undefined,
+          accountType: bankForm.accountType,
+          holderName: bankForm.holderName || undefined,
+          holderDocument: bankForm.holderDocument || undefined,
+          pixKeyType: bankForm.pixKeyType || undefined,
+          pixKeyValue: bankForm.pixKeyValue || undefined,
+        };
+        await updateTenantBankAccount(id, payload);
+        const updated = await getTenantBankAccount(id);
+        const mapped = bankFormFromTenantApi(updated);
+        setBankPersisted(mapped);
+        setBankForm(mapped);
+      }
+
+      // Identidade visual (cores)
+      const primaryNormalized = normalizeColorInput(brandPrimary);
+      const secondaryNormalized = normalizeColorInput(brandSecondary);
+      const colorsDirty =
+        (detail?.primaryColor ?? '') !== (primaryNormalized ?? '') ||
+        (detail?.secondaryColor ?? '') !== (secondaryNormalized ?? '');
+      if (canOpenBankAndIdentity && colorsDirty) {
+        setBrandColorSaving(true);
+        await updateTenantBrandIdentity(id, { primaryColor: primaryNormalized, secondaryColor: secondaryNormalized });
+        setBrandColorOk(true);
+      }
+
+      // Identidade visual (logo)
+      if (logoFile) {
+        setLogoUploading(true);
+        await uploadTenantLogo(id, logoFile);
+        setLogoFile(null);
+      }
+
       const refreshed = await getTenantById(id);
       setDetail(refreshed);
       setForm(toFormState(refreshed));
+      setBrandPrimary(refreshed.primaryColor ?? '');
+      setBrandSecondary(refreshed.secondaryColor ?? '');
       setIsEditing(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao salvar parceiro');
+      const msg = err instanceof Error ? err.message : 'Erro ao salvar parceiro';
+      // Se falhar alguma etapa, preferimos mostrar erro geral (e manter formulário para o usuário tentar novamente)
+      setError(msg);
     } finally {
       setSaving(false);
-    }
-  };
-
-  const handleSaveBank = async () => {
-    if (!id) return;
-    setBankSaving(true);
-    setBankError(null);
-    const payload: UpdateBankAccountPayload = {
-      bankCode: bankForm.bankCode || undefined,
-      bankName: bankForm.bankName || undefined,
-      branch: bankForm.branch || undefined,
-      accountNumber: bankForm.accountNumber || undefined,
-      accountDigit: bankForm.accountDigit || undefined,
-      accountType: bankForm.accountType,
-      holderName: bankForm.holderName || undefined,
-      holderDocument: bankForm.holderDocument || undefined,
-      pixKeyType: bankForm.pixKeyType || undefined,
-      pixKeyValue: bankForm.pixKeyValue || undefined,
-    };
-    try {
-      await updateTenantBankAccount(id, payload);
-      const updated = await getTenantBankAccount(id);
-      setBankForm(bankFormFromTenantApi(updated));
-      setBankEditing(false);
-    } catch (err) {
-      setBankError(err instanceof Error ? err.message : 'Erro ao salvar dados bancários');
-    } finally {
       setBankSaving(false);
-    }
-  };
-
-  const handleUploadLogo = async () => {
-    if (!id || !logoFile) return;
-    setLogoUploading(true);
-    setLogoError(null);
-    try {
-      await uploadTenantLogo(id, logoFile);
-      setLogoFile(null);
-      const refreshed = await getTenantById(id);
-      setDetail(refreshed);
-    } catch (err) {
-      setLogoError(err instanceof Error ? err.message : 'Erro ao enviar logo');
-    } finally {
+      setBrandColorSaving(false);
       setLogoUploading(false);
     }
   };
 
-  const handleSaveBrandColors = async () => {
-    if (!id) return;
-    setBrandColorSaving(true);
-    setBrandColorError(null);
-    setBrandColorOk(false);
-    try {
-      const primary = normalizeColorInput(brandPrimary);
-      const secondary = normalizeColorInput(brandSecondary);
-      await updateTenantBrandIdentity(id, { primaryColor: primary, secondaryColor: secondary });
-      const refreshed = await getTenantById(id);
-      setDetail(refreshed);
-      setBrandPrimary(refreshed.primaryColor ?? '');
-      setBrandSecondary(refreshed.secondaryColor ?? '');
-      setBrandColorOk(true);
-    } catch (err) {
-      setBrandColorError(err instanceof Error ? err.message : 'Erro ao salvar cores');
-    } finally {
-      setBrandColorSaving(false);
-    }
-  };
-
   const currentLogoUrl = detail?.logoUrl ?? null;
-  const bankReadonly = !bankEditing;
+  const bankReadonly = !isEditing;
   /** Enquanto carrega ou sem detalhe, não liberar abas que exigem cadastro persistido. */
   const canOpenBankAndIdentity = !loading && Boolean(detail?.id);
 
@@ -310,11 +305,8 @@ export function SystemAdminTenantDetailPage() {
   const tenantActionItems = React.useMemo((): PageActionItem[] => {
     if (loading || !detail) return [];
     const items: PageActionItem[] = [];
-    if (activeTab === 'dados' && !isEditing) {
+    if (!isEditing) {
       items.push({ label: 'Editar', onClick: () => setIsEditing(true) });
-    }
-    if (activeTab === 'bank' && canOpenBankAndIdentity && !bankEditing) {
-      items.push({ label: 'Editar', onClick: () => setBankEditing(true) });
     }
     items.push({
       label: 'Ver lojas',
@@ -324,9 +316,7 @@ export function SystemAdminTenantDetailPage() {
   }, [
     loading,
     detail,
-    activeTab,
     isEditing,
-    bankEditing,
     canOpenBankAndIdentity,
     id,
     navigate,
@@ -342,14 +332,14 @@ export function SystemAdminTenantDetailPage() {
           <div className="flex flex-wrap items-center gap-2">
             {!loading && (
               <>
-                {activeTab === 'dados' && isEditing && (
-                  <Button size="lg" variant="brand" onClick={handleSave} disabled={saving}>
+                {isEditing && (
+                  <Button
+                    size="lg"
+                    variant="brand"
+                    onClick={handleSave}
+                    disabled={saving || bankSaving || brandColorSaving || logoUploading}
+                  >
                     {saving ? 'Salvando…' : 'Salvar'}
-                  </Button>
-                )}
-                {activeTab === 'bank' && canOpenBankAndIdentity && bankEditing && (
-                  <Button size="lg" variant="brand" onClick={handleSaveBank} disabled={bankSaving}>
-                    {bankSaving ? 'Salvando…' : 'Salvar'}
                   </Button>
                 )}
                 <PageActionsDropdown size="lg" items={tenantActionItems} />
@@ -632,6 +622,7 @@ export function SystemAdminTenantDetailPage() {
                           type="text"
                           value={brandPrimary}
                           onChange={(e) => setBrandPrimary(e.target.value)}
+                          readOnly={!isEditing}
                           placeholder={`vazio = ${DEFAULT_TENANT_PRIMARY_COLOR}`}
                           className={`${inputClass} min-w-[10rem] flex-1 font-mono text-xs`}
                           autoComplete="off"
@@ -642,6 +633,7 @@ export function SystemAdminTenantDetailPage() {
                           className="h-9 w-12 cursor-pointer rounded border border-input bg-background p-0.5"
                           value={hexForColorInput(brandPrimary, DEFAULT_TENANT_PRIMARY_COLOR)}
                           onChange={(e) => setBrandPrimary(e.target.value)}
+                          disabled={!isEditing}
                         />
                       </div>
                     </div>
@@ -655,6 +647,7 @@ export function SystemAdminTenantDetailPage() {
                           type="text"
                           value={brandSecondary}
                           onChange={(e) => setBrandSecondary(e.target.value)}
+                          readOnly={!isEditing}
                           placeholder={`vazio = ${DEFAULT_TENANT_SECONDARY_COLOR}`}
                           className={`${inputClass} min-w-[10rem] flex-1 font-mono text-xs`}
                           autoComplete="off"
@@ -665,18 +658,11 @@ export function SystemAdminTenantDetailPage() {
                           className="h-9 w-12 cursor-pointer rounded border border-input bg-background p-0.5"
                           value={hexForColorInput(brandSecondary, DEFAULT_TENANT_SECONDARY_COLOR)}
                           onChange={(e) => setBrandSecondary(e.target.value)}
+                          disabled={!isEditing}
                         />
                       </div>
                     </div>
                   </div>
-                  <Button
-                    type="button"
-                    variant="brand"
-                    disabled={brandColorSaving}
-                    onClick={() => void handleSaveBrandColors()}
-                  >
-                    {brandColorSaving ? 'Salvando…' : 'Salvar cores'}
-                  </Button>
                 </div>
 
                 <div className="space-y-4 border-t border-border pt-6">
@@ -705,16 +691,8 @@ export function SystemAdminTenantDetailPage() {
                   label="Nova imagem"
                   value={logoFile}
                   onChange={setLogoFile}
-                  disabled={logoUploading}
+                  disabled={!isEditing || logoUploading}
                 />
-                <Button
-                  type="button"
-                  variant="brand"
-                  disabled={!logoFile || logoUploading}
-                  onClick={handleUploadLogo}
-                >
-                  {logoUploading ? 'Enviando…' : 'Enviar logo'}
-                </Button>
                 </div>
               </div>
             )}
