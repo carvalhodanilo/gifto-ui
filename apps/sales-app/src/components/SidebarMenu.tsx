@@ -14,6 +14,9 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
+/** Tempo (ms) com o cursor sobre a sidebar antes de expandir os rótulos no desktop. Ajuste aqui ou via prop `hoverExpandDelayMs`. */
+export const SIDEBAR_HOVER_EXPAND_DELAY_MS = 1500;
+
 export interface SidebarMenuItem {
   to: string;
   label: string;
@@ -41,6 +44,8 @@ const defaultItems: SidebarMenuItem[] = [
 interface SidebarMenuProps {
   items?: SidebarMenuItem[];
   className?: string;
+  /** Sobrescreve `SIDEBAR_HOVER_EXPAND_DELAY_MS` (desktop: atraso antes de mostrar rótulos). */
+  hoverExpandDelayMs?: number;
 }
 
 function useIsDesktopMinMd(): boolean {
@@ -60,12 +65,26 @@ function useIsDesktopMinMd(): boolean {
 }
 
 /**
- * Sidebar: em desktop (md+), recolhida por padrão e expande com hover; no mobile, sempre com rótulos.
+ * Sidebar: em desktop (md+), recolhida por padrão e expande após o cursor ficar sobre ela por um tempo; no mobile, sempre com rótulos.
  */
-export function SidebarMenu({ items = defaultItems, className }: SidebarMenuProps) {
+export function SidebarMenu({
+  items = defaultItems,
+  className,
+  hoverExpandDelayMs = SIDEBAR_HOVER_EXPAND_DELAY_MS,
+}: SidebarMenuProps) {
   const { roles } = useAuth();
   const isDesktop = useIsDesktopMinMd();
   const [hoverOpen, setHoverOpen] = React.useState(false);
+  const hoverExpandTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearHoverExpandTimer = React.useCallback(() => {
+    if (hoverExpandTimerRef.current) {
+      clearTimeout(hoverExpandTimerRef.current);
+      hoverExpandTimerRef.current = null;
+    }
+  }, []);
+
+  React.useEffect(() => () => clearHoverExpandTimer(), [clearHoverExpandTimer]);
 
   const visibleItems = React.useMemo(() => {
     return items.filter((item) => {
@@ -83,8 +102,18 @@ export function SidebarMenu({ items = defaultItems, className }: SidebarMenuProp
         'shrink-0 bg-card/50 transition-[width,padding] duration-200',
         className
       )}
-      onMouseEnter={() => isDesktop && setHoverOpen(true)}
-      onMouseLeave={() => isDesktop && setHoverOpen(false)}
+      onMouseEnter={() => {
+        if (!isDesktop) return;
+        clearHoverExpandTimer();
+        hoverExpandTimerRef.current = setTimeout(() => {
+          setHoverOpen(true);
+          hoverExpandTimerRef.current = null;
+        }, hoverExpandDelayMs);
+      }}
+      onMouseLeave={() => {
+        clearHoverExpandTimer();
+        if (isDesktop) setHoverOpen(false);
+      }}
     >
       <nav className={cn('flex flex-col gap-0.5', collapsed && 'items-stretch')}>
         {visibleItems.map(({ to, label, icon: Icon, end }) => (
