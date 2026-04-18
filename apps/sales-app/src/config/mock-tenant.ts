@@ -41,7 +41,8 @@ export const MOCK_TENANT: Tenant = {
   tenantId: 'mock-shopping-1',
   name: 'Iguatemi Gift Shop',
   slug: 'iguatemishopping',
-  logoUrl: null,
+  /** Ficheiro estático em `public/header.jpg` (Vite → URL `/header.jpg`). */
+  logoUrl: '/header.jpg',
   primaryColor: DEFAULT_TENANT_PRIMARY_COLOR,
   secondaryColor: DEFAULT_TENANT_SECONDARY_COLOR,
   active: true,
