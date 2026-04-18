@@ -17,6 +17,7 @@
  */
 import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { OFFICIAL_BRAND_PALETTE } from '@core-ui/ui';
 import { apiConfigurationError, publicCampaignLandingUrl, tenantIdQuery } from '../config/api';
 import { CampaignPageLoader } from '../components/CampaignPageLoader';
 import { parseTenantHex } from '../lib/tenantTheme';
@@ -129,14 +130,14 @@ export function CampaignLandingPage() {
 
   if (error) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-stone-100 px-6 text-center">
-        <div className="max-w-md rounded-2xl border border-stone-200 bg-white p-8 shadow-sm">
-          <h1 className="text-xl font-semibold text-stone-900">Algo deu errado</h1>
-          <p className="mt-3 text-sm leading-relaxed text-stone-600">{error}</p>
+      <div className="flex min-h-screen flex-col items-center justify-center bg-brand-muted px-6 text-center">
+        <div className="max-w-md rounded-2xl border border-black/10 bg-brand-white p-8 shadow-sm">
+          <h1 className="text-xl font-semibold text-brand-navy">Algo deu errado</h1>
+          <p className="mt-3 text-sm leading-relaxed text-brand-soft">{error}</p>
           {needsTenantId && (
             <p className="mt-4 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-900 ring-1 ring-amber-200/80">
-              Dica: em sandbox, defina <code className="rounded bg-stone-100 px-1">VITE_TENANT_ID</code> no{' '}
-              <code className="rounded bg-stone-100 px-1">.env</code> com o UUID do shopping.
+              Dica: em sandbox, defina <code className="rounded bg-brand-muted px-1">VITE_TENANT_ID</code> no{' '}
+              <code className="rounded bg-brand-muted px-1">.env</code> com o UUID do shopping.
             </p>
           )}
         </div>
@@ -148,37 +149,33 @@ export function CampaignLandingPage() {
     return null;
   }
 
-  /** Cor primária da marca (só UI de destaque); se null, mantém-se paleta neutra. */
-  const accentPrimary = parseTenantHex(data.tenant.primaryBrandColor);
-  const accentSecondary = parseTenantHex(data.tenant.secondaryBrandColor);
+  /** Cores da API com fallback na paleta oficial (`@core-ui/ui`). */
+  const accentPrimary =
+    parseTenantHex(data.tenant.primaryBrandColor) ?? OFFICIAL_BRAND_PALETTE.navy;
+  const accentSecondary =
+    parseTenantHex(data.tenant.secondaryBrandColor) ?? OFFICIAL_BRAND_PALETTE.cyan;
 
   return (
-    <div className="min-h-screen bg-stone-100 pb-16 text-stone-900">
-      <header className="border-b border-stone-200/90 bg-white/90 backdrop-blur-md">
+    <div className="min-h-screen bg-brand-muted pb-16 text-brand-navy">
+      <header className="border-b border-black/10 bg-brand-white/90 backdrop-blur-md">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-4 sm:px-6">
-          <p className="truncate text-sm font-semibold text-stone-900">{data.tenant.displayName}</p>
-          {accentPrimary ? (
-            <span
-              className="shrink-0 rounded-full px-3 py-1 text-xs font-medium text-stone-900 ring-1 ring-black/5"
-              style={{
-                backgroundColor: `${accentPrimary}2a`,
-                boxShadow: `inset 0 0 0 1px ${accentPrimary}40`,
-              }}
-            >
-              {statusLabel(data.campaign.status)}
-            </span>
-          ) : (
-            <span className="shrink-0 rounded-full bg-stone-200/90 px-3 py-1 text-xs font-medium text-stone-800 ring-1 ring-stone-300/80">
-              {statusLabel(data.campaign.status)}
-            </span>
-          )}
+          <p className="truncate text-sm font-semibold text-brand-navy">{data.tenant.displayName}</p>
+          <span
+            className="shrink-0 rounded-full px-3 py-1 text-xs font-medium text-brand-navy ring-1 ring-black/5"
+            style={{
+              backgroundColor: `${accentPrimary}2a`,
+              boxShadow: `inset 0 0 0 1px ${accentPrimary}40`,
+            }}
+          >
+            {statusLabel(data.campaign.status)}
+          </span>
         </div>
       </header>
 
       <main className="mx-auto max-w-3xl px-4 pt-6 sm:px-6">
-        <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm ring-1 ring-stone-950/5">
+        <div className="overflow-hidden rounded-2xl border border-black/10 bg-brand-white shadow-sm ring-1 ring-black/5">
           {data.campaign.bannerUrl ? (
-            <div className="relative aspect-[3/1] w-full bg-stone-200">
+            <div className="relative aspect-[3/1] w-full bg-brand-muted">
               <img
                 src={data.campaign.bannerUrl}
                 alt=""
@@ -187,26 +184,18 @@ export function CampaignLandingPage() {
                 decoding="async"
               />
               <div
-                className="pointer-events-none absolute inset-0 bg-gradient-to-t from-stone-100/95 via-stone-100/25 to-transparent"
+                className="pointer-events-none absolute inset-0 bg-gradient-to-t from-brand-muted/95 via-brand-muted/25 to-transparent"
                 aria-hidden
               />
             </div>
           ) : (
             <div
-              className={
-                accentPrimary
-                  ? 'flex aspect-[3/1] w-full items-end justify-start p-6'
-                  : 'flex aspect-[3/1] w-full items-end justify-start bg-gradient-to-br from-stone-200 to-stone-100 p-6'
-              }
-              style={
-                accentPrimary
-                  ? {
-                      backgroundImage: `linear-gradient(135deg, ${accentPrimary}35 0%, transparent 55%), linear-gradient(to bottom right, #e7e5e4, #f5f5f4)`,
-                    }
-                  : undefined
-              }
+              className="flex aspect-[3/1] w-full items-end justify-start p-6"
+              style={{
+                backgroundImage: `linear-gradient(135deg, ${accentPrimary}35 0%, transparent 55%), linear-gradient(to bottom right, ${OFFICIAL_BRAND_PALETTE.grayLight}, ${OFFICIAL_BRAND_PALETTE.white})`,
+              }}
             >
-              <h1 className="text-2xl font-bold tracking-tight text-stone-900 drop-shadow-sm sm:text-3xl">
+              <h1 className="text-2xl font-bold tracking-tight text-brand-navy drop-shadow-sm sm:text-3xl">
                 {data.campaign.name}
               </h1>
             </div>
@@ -215,47 +204,47 @@ export function CampaignLandingPage() {
           <div className="space-y-4 p-5 sm:p-7">
             {data.campaign.bannerUrl && (
               <h1
-                className="text-2xl font-bold tracking-tight text-stone-900 sm:text-3xl"
-                style={
-                  accentPrimary
-                    ? { borderLeftWidth: 4, borderLeftColor: accentPrimary, paddingLeft: '0.75rem' }
-                    : { borderLeftWidth: 4, borderLeftColor: '#d6d3d1', paddingLeft: '0.75rem' }
-                }
+                className="text-2xl font-bold tracking-tight text-brand-navy sm:text-3xl"
+                style={{
+                  borderLeftWidth: 4,
+                  borderLeftColor: accentPrimary,
+                  paddingLeft: '0.75rem',
+                }}
               >
                 {data.campaign.name}
               </h1>
             )}
 
-            <dl className="grid gap-3 rounded-xl border border-stone-200 bg-stone-50/80 p-4 sm:grid-cols-2">
+            <dl className="grid gap-3 rounded-xl border border-black/10 bg-brand-white/90 p-4 sm:grid-cols-2">
               <div>
-                <dt className="text-xs font-medium uppercase tracking-wider text-stone-500">Período da campanha</dt>
-                <dd className="mt-1 text-sm font-medium text-stone-800">
+                <dt className="text-xs font-medium uppercase tracking-wider text-brand-soft">Período da campanha</dt>
+                <dd className="mt-1 text-sm font-medium text-brand-navy">
                   {formatRange(data.campaign.startsAt, data.campaign.endsAt)}
                 </dd>
               </div>
               <div>
-                <dt className="text-xs font-medium uppercase tracking-wider text-stone-500">
+                <dt className="text-xs font-medium uppercase tracking-wider text-brand-soft">
                   Validade do voucher (dias)
                 </dt>
-                <dd className="mt-1 text-sm font-medium text-stone-800">{data.campaign.expirationDays} dias</dd>
+                <dd className="mt-1 text-sm font-medium text-brand-navy">{data.campaign.expirationDays} dias</dd>
               </div>
             </dl>
           </div>
         </div>
 
         <section className="mt-12">
-          <div className="mb-5 flex items-end justify-between gap-4 border-b border-stone-200 pb-2">
+          <div className="mb-5 flex items-end justify-between gap-4 border-b border-black/10 pb-2">
             <h2
-              className="border-l-4 pl-3 text-lg font-semibold text-stone-900"
-              style={{ borderColor: accentPrimary ?? '#d6d3d1' }}
+              className="border-l-4 pl-3 text-lg font-semibold text-brand-navy"
+              style={{ borderColor: accentPrimary }}
             >
               Lojas participantes
             </h2>
-            <span className="text-xs text-stone-500">{data.stores.length} loja(s)</span>
+            <span className="text-xs text-brand-soft">{data.stores.length} loja(s)</span>
           </div>
 
           {data.stores.length === 0 ? (
-            <p className="rounded-xl border border-dashed border-stone-300 bg-white px-4 py-8 text-center text-sm text-stone-500">
+            <p className="rounded-xl border border-dashed border-black/15 bg-brand-white px-4 py-8 text-center text-sm text-brand-soft">
               Nenhuma loja listada para esta campanha.
             </p>
           ) : (
@@ -263,15 +252,11 @@ export function CampaignLandingPage() {
               {data.stores.map((s) => (
                 <li
                   key={s.merchantId}
-                  className="flex items-center gap-3 rounded-xl border border-stone-200 bg-white p-3 shadow-sm transition hover:border-stone-300 hover:shadow"
+                  className="flex items-center gap-3 rounded-xl border border-black/10 bg-brand-white p-3 shadow-sm transition hover:border-black/20 hover:shadow"
                 >
                   <div
-                    className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-stone-100 ring-1 ring-stone-200/80"
-                    style={
-                      accentSecondary
-                        ? { boxShadow: `inset 0 0 0 1px ${accentSecondary}35` }
-                        : undefined
-                    }
+                    className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-brand-muted ring-1 ring-black/10"
+                    style={{ boxShadow: `inset 0 0 0 1px ${accentSecondary}35` }}
                   >
                     {s.landingLogoUrl ? (
                       <img
@@ -281,14 +266,14 @@ export function CampaignLandingPage() {
                         loading="lazy"
                       />
                     ) : (
-                      <span className="text-lg font-semibold text-stone-400" aria-hidden>
+                      <span className="text-lg font-semibold text-brand-soft/70" aria-hidden>
                         {s.displayName.charAt(0).toUpperCase()}
                       </span>
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-medium text-stone-900">{s.displayName}</p>
-                    {s.city && <p className="truncate text-xs text-stone-500">{s.city}</p>}
+                    <p className="truncate font-medium text-brand-navy">{s.displayName}</p>
+                    {s.city && <p className="truncate text-xs text-brand-soft">{s.city}</p>}
                   </div>
                 </li>
               ))}

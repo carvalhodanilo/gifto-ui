@@ -13,7 +13,7 @@ interface TenantThemeProps {
  *   --brand-primary   (cor principal)
  *   --brand-secondary (cor secundária)
  *   --brand-logo-url  (imagem do logo, se houver)
- * Fonte dos dados: hoje config/mock-tenant.ts; no futuro API GET /public/shoppings/resolve?slug=...
+ * Fonte dos dados: mock/API; defaults em `@core-ui/ui` (`OFFICIAL_BRAND_PALETTE`).
  */
 export function TenantTheme({ tenant, children }: TenantThemeProps) {
   React.useEffect(() => {

@@ -1,23 +1,26 @@
+import { OFFICIAL_BRAND_PALETTE } from '@core-ui/ui';
+
 type CampaignPageLoaderProps = {
   label?: string;
-  /** Hex válido da marca; se omitido, loader 100% neutro (stone). */
+  /** Hex da marca; se omitido, usa o navy da paleta oficial (`OFFICIAL_BRAND_PALETTE` em `@core-ui/ui`). */
   accentColor?: string | null;
 };
 
 /**
- * Loader full-screen (tema neutro; acento opcional se no futuro passares cor da marca).
+ * Loader full-screen alinhado à paleta global (brand-muted + acento navy por defeito).
  */
 export function CampaignPageLoader({
   label = 'Carregando campanha…',
   accentColor,
 }: CampaignPageLoaderProps) {
-  const hasAccent =
-    accentColor && /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(accentColor.trim());
-  const safeAccent = hasAccent ? accentColor!.trim() : '#a8a29e';
+  const safeAccent =
+    accentColor && /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(accentColor.trim())
+      ? accentColor.trim()
+      : OFFICIAL_BRAND_PALETTE.navy;
 
   return (
     <div
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center overflow-hidden bg-stone-100"
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center overflow-hidden bg-brand-muted"
       role="status"
       aria-live="polite"
       aria-busy="true"
@@ -25,16 +28,10 @@ export function CampaignPageLoader({
       <div
         className="pointer-events-none absolute inset-0 opacity-80"
         style={{
-          background: hasAccent
-            ? `
+          background: `
             radial-gradient(ellipse 80% 60% at 50% 120%, ${safeAccent}2e, transparent 55%),
             radial-gradient(ellipse 50% 40% at 20% 30%, ${safeAccent}24, transparent 50%),
-            radial-gradient(ellipse 45% 35% at 85% 25%, #d6d3d120, transparent 45%)
-          `
-            : `
-            radial-gradient(ellipse 80% 60% at 50% 120%, #d6d3d140, transparent 55%),
-            radial-gradient(ellipse 50% 40% at 20% 30%, #e7e5e450, transparent 50%),
-            radial-gradient(ellipse 45% 35% at 85% 25%, #a8a29e28, transparent 45%)
+            radial-gradient(ellipse 45% 35% at 85% 25%, ${OFFICIAL_BRAND_PALETTE.grayLight}40, transparent 45%)
           `,
         }}
       />
@@ -46,31 +43,27 @@ export function CampaignPageLoader({
             style={{ backgroundColor: safeAccent }}
           />
           <div
-            className="absolute inset-2 rounded-full border-2 border-stone-300/60 motion-reduce:animate-none animate-loader-orbit"
+            className="absolute inset-2 rounded-full border-2 border-black/15 motion-reduce:animate-none animate-loader-orbit"
             style={{ borderTopColor: safeAccent, borderRightColor: `${safeAccent}99` }}
           />
           <div
-            className="absolute inset-6 rounded-full border border-stone-200 motion-reduce:animate-none animate-loader-orbit"
+            className="absolute inset-6 rounded-full border border-black/10 motion-reduce:animate-none animate-loader-orbit"
             style={{
               animationDirection: 'reverse',
               animationDuration: '3.6s',
-              borderBottomColor: hasAccent ? `${safeAccent}55` : '#d6d3d1',
+              borderBottomColor: `${safeAccent}55`,
             }}
           />
           <div
-            className="absolute inset-[22%] flex items-center justify-center rounded-full bg-white shadow-md ring-1 ring-stone-200/90"
+            className="absolute inset-[22%] flex items-center justify-center rounded-full bg-brand-white shadow-md ring-1 ring-black/10"
             style={{
-              background: hasAccent
-                ? `linear-gradient(145deg, ${safeAccent}30 0%, #fafaf9 50%, #ffffff 100%)`
-                : 'linear-gradient(145deg, #f5f5f4 0%, #ffffff 100%)',
+              background: `linear-gradient(145deg, ${safeAccent}30 0%, ${OFFICIAL_BRAND_PALETTE.grayLight} 50%, ${OFFICIAL_BRAND_PALETTE.white} 100%)`,
             }}
           >
             <div
               className="h-14 w-14 rounded-full motion-reduce:opacity-90 animate-loader-shimmer sm:h-16 sm:w-16"
               style={{
-                background: hasAccent
-                  ? `linear-gradient(120deg, ${safeAccent}55 0%, #ffffff 45%, ${safeAccent}80 85%)`
-                  : 'linear-gradient(120deg, #d6d3d1 0%, #fafaf9 45%, #a8a29e 85%)',
+                background: `linear-gradient(120deg, ${safeAccent}55 0%, #ffffff 45%, ${safeAccent}80 85%)`,
                 backgroundSize: '200% 200%',
               }}
             />
@@ -78,8 +71,8 @@ export function CampaignPageLoader({
         </div>
 
         <div className="max-w-xs text-center sm:max-w-md">
-          <p className="text-lg font-semibold tracking-tight text-stone-900 sm:text-xl">{label}</p>
-          <p className="mt-2 text-sm font-medium text-stone-500">
+          <p className="text-lg font-semibold tracking-tight text-brand-navy sm:text-xl">{label}</p>
+          <p className="mt-2 text-sm font-medium text-brand-soft">
             Preparando banner, datas e lojas participantes
           </p>
         </div>

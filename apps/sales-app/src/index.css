@@ -4,30 +4,30 @@
 
 @layer base {
   :root {
-    /* Tema do tenant: fallback até TenantTheme aplicar valores do mock/API */
-    /* Valores reais vêm de config/mock-tenant.ts (MVP) ou da API (futuro). */
-    --brand-primary: #0f172a;
-    --brand-secondary: #f1f5f9;
+    /* Marca: fallback até TenantTheme (mock/API). HEX canónico: packages/ui/src/theme/official-brand-palette.ts */
+    --brand-primary: #003366;
+    --brand-secondary: #00d4ff;
     --brand-logo-url: none;
+    /* Tema Shadcn (HSL sem hsl()): navy = texto; cyan = CTAs; cinzas = apoio */
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --foreground: 210 100% 20%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 210 100% 20%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --popover-foreground: 210 100% 20%;
+    --primary: 191 100% 50%;
+    --primary-foreground: 210 100% 20%;
+    --secondary: 0 0% 89%;
+    --secondary-foreground: 210 100% 20%;
+    --muted: 0 0% 89%;
+    --muted-foreground: 222 47% 51%;
+    --accent: 191 60% 95%;
+    --accent-foreground: 210 100% 20%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 0 0% 85%;
+    --input: 0 0% 85%;
+    --ring: 191 100% 50%;
   }
 
   .dark {

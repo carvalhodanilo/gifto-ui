@@ -1,19 +1,27 @@
 import type { Tenant } from '../types/tenant';
+import {
+  DEFAULT_TENANT_PRIMARY_COLOR,
+  DEFAULT_TENANT_SECONDARY_COLOR,
+  OFFICIAL_BRAND_PALETTE,
+} from '@core-ui/ui';
+
+/** Reexport: imports existentes continuam a usar `config/mock-tenant`. */
+export {
+  DEFAULT_TENANT_PRIMARY_COLOR,
+  DEFAULT_TENANT_SECONDARY_COLOR,
+  OFFICIAL_BRAND_PALETTE,
+};
 
 /**
  * =============================================================================
  * CONFIGURAÇÃO MOCKADA DO SHOPPING (MVP)
  * =============================================================================
  *
- * ÚNICO LUGAR PARA ALTERAR IDENTIDADE VISUAL DO KIOSK:
- * - Paleta de cores (primaryColor, secondaryColor)
- * - Nome do shopping (name)
- * - Logo (logoUrl: string | null — use URL da imagem ou null para ícone padrão)
- * - Slug (slug) — usado no futuro para resolução por subdomínio
+ * Defaults de identidade vêm de **`@core-ui/ui`** (`OFFICIAL_BRAND_PALETTE` — um único sítio para HEX).
+ * Aqui só se ajusta o que for específico do mock (slug, tenantId, etc.).
  *
- * O TenantTheme aplica esses valores em variáveis CSS (--brand-primary, etc.);
- * todo o layout (header, botões, ícones) usa essas variáveis. Alterar aqui
- * atualiza o tema em toda a aplicação.
+ * O TenantTheme aplica `primaryColor` / `secondaryColor` em `--brand-primary` / `--brand-secondary`;
+ * o restante do tema Shadcn está em `src/index.css` (:root).
  *
  * -----------------------------------------------------------------------------
  * MUDANÇA FUTURA (quando existir API):
@@ -28,10 +36,6 @@ import type { Tenant } from '../types/tenant';
  *    permanece igual — já consome o objeto tenant.
  * 5. Este arquivo (mock) pode ser removido ou mantido só para fallback/dev.
  */
-
-/** Fallback quando a API não define cor da marca (GET branding com null). */
-export const DEFAULT_TENANT_PRIMARY_COLOR = '#0f172a';
-export const DEFAULT_TENANT_SECONDARY_COLOR = '#64748b';
 
 export const MOCK_TENANT: Tenant = {
   tenantId: 'mock-shopping-1',

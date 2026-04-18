@@ -3,6 +3,15 @@ export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
+      colors: {
+        brand: {
+          navy: 'var(--palette-navy)',
+          cyan: 'var(--palette-cyan)',
+          muted: 'var(--palette-gray-light)',
+          soft: 'var(--palette-gray-mid)',
+          white: 'var(--palette-white)',
+        },
+      },
       fontFamily: {
         sans: ['"DM Sans"', 'system-ui', 'sans-serif'],
       },

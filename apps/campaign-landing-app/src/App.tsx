@@ -10,10 +10,10 @@ export default function App() {
         <Route
           path="/"
           element={
-            <div className="flex min-h-screen flex-col items-center justify-center gap-2 bg-stone-100 px-6 text-center text-sm text-stone-600">
+            <div className="flex min-h-screen flex-col items-center justify-center gap-2 bg-brand-muted px-6 text-center text-sm text-brand-soft">
               <p>
                 Use a rota{' '}
-                <code className="rounded bg-white px-1.5 py-0.5 text-stone-800 ring-1 ring-stone-200">
+                <code className="rounded bg-brand-white px-1.5 py-0.5 text-brand-navy ring-1 ring-black/10">
                   /campanha/&lt;UUID&gt;
                 </code>
               </p>

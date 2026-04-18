@@ -1,5 +1,6 @@
 /**
- * Cores da marca vindas da API (hex). Se inválidas ou ausentes, a UI fica só neutra.
+ * Cores da marca vindas da API (hex). Se inválidas ou ausentes, a página usa
+ * `OFFICIAL_BRAND_PALETTE` em `@core-ui/ui` (ver `CampaignLandingPage`).
  */
 const HEX = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
 

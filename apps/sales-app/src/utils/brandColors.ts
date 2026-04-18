@@ -9,7 +9,7 @@ export function normalizeColorInput(raw: string): string | null {
   if (!t) return null;
   const v = t.startsWith('#') ? t : `#${t}`;
   if (!HEX.test(v)) {
-    throw new Error('Cor inválida: use #RGB ou #RRGGBB (ex.: #0f172a).');
+    throw new Error('Cor inválida: use #RGB ou #RRGGBB (ex.: #003366).');
   }
   return v;
 }
@@ -18,7 +18,7 @@ export function normalizeColorInput(raw: string): string | null {
 export function hexForColorInput(raw: string, fallbackFullHex: string): string {
   const t = raw.trim();
   if (!t || !HEX.test(t.startsWith('#') ? t : `#${t}`)) {
-    return fallbackFullHex.startsWith('#') && fallbackFullHex.length === 7 ? fallbackFullHex : '#0f172a';
+    return fallbackFullHex.startsWith('#') && fallbackFullHex.length === 7 ? fallbackFullHex : '#003366';
   }
   const v = t.startsWith('#') ? t : `#${t}`;
   if (v.length === 4) {

@@ -10,6 +10,7 @@
  *   4. Resposta deve seguir o tipo Tenant (tenantId, name, slug, logoUrl, primaryColor, secondaryColor, active).
  */
 
+import { DEFAULT_TENANT_PRIMARY_COLOR, DEFAULT_TENANT_SECONDARY_COLOR } from '@core-ui/ui';
 import type { TenantResolveResponse } from '../types/tenant';
 import { authHeaders } from './authHeaders';
 import { authFetch } from './authFetch';
@@ -31,8 +32,8 @@ function getMockTenant(slug: string): TenantResolveResponse {
     name: 'Gift Shop (Dev)',
     slug,
     logoUrl: null,
-    primaryColor: '#0f172a',
-    secondaryColor: '#64748b',
+    primaryColor: DEFAULT_TENANT_PRIMARY_COLOR,
+    secondaryColor: DEFAULT_TENANT_SECONDARY_COLOR,
     active: true,
   };
 }

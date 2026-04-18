@@ -2,11 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
+/**
+ * Variáveis espelham `packages/ui/src/theme/official-brand-palette.ts` (fonte única em TS).
+ * Se alterar HEX, atualize também o ficheiro da paleta em `@core-ui/ui`.
+ */
 @layer base {
+  :root {
+    --palette-navy: #003366;
+    --palette-cyan: #00d4ff;
+    --palette-gray-light: #e4e4e4;
+    --palette-gray-mid: #4a6dba;
+    --palette-white: #ffffff;
+  }
   html {
     @apply antialiased;
   }
   body {
-    @apply min-h-screen bg-stone-100 text-stone-900;
+    @apply min-h-screen bg-brand-muted text-brand-navy;
   }
 }
