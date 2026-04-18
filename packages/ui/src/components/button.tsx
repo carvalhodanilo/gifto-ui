@@ -10,7 +10,7 @@ const buttonVariants = cva(
         default: 'bg-primary text-primary-foreground hover:bg-primary/90',
         /** Cor dinâmica do tenant; hover/active escurecem com color-mix (opacidade /90 era quase invisível). */
         brand:
-          'bg-[var(--brand-primary)] text-primary-foreground shadow-sm transition-[background-color,box-shadow] duration-200 hover:bg-[color-mix(in_srgb,var(--brand-primary)_82%,black)] hover:shadow-md active:bg-[color-mix(in_srgb,var(--brand-primary)_72%,black)] active:shadow-sm focus-visible:ring-[var(--brand-primary)]/35',
+          'bg-[var(--brand-primary)] text-[var(--brand-primary-foreground)] shadow-sm transition-[background-color,box-shadow] duration-200 hover:bg-[color-mix(in_srgb,var(--brand-primary)_82%,black)] hover:shadow-md active:bg-[color-mix(in_srgb,var(--brand-primary)_72%,black)] active:shadow-sm focus-visible:ring-[var(--brand-primary)]/35',
         destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
         outline: 'border border-input bg-background hover:bg-accent hover:text-accent-foreground',
         secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',

@@ -20,6 +20,8 @@ export const OFFICIAL_BRAND_PALETTE = {
   grayMid: '#4A6DBA',
   /** Branco — fundos e texto sobre navy em contextos específicos */
   white: '#FFFFFF',
+  /** Texto sobre fundo `--brand-primary` (ex.: `<Button variant="brand" />`) */
+  onBrandPrimary: '#FFFFFF',
 } as const;
 
 export type OfficialBrandPaletteKey = keyof typeof OFFICIAL_BRAND_PALETTE;

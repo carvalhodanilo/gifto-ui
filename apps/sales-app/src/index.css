@@ -6,6 +6,7 @@
   :root {
     /* Marca: fallback até TenantTheme (mock/API). HEX canónico: packages/ui/src/theme/official-brand-palette.ts */
     --brand-primary: #003366;
+    --brand-primary-foreground: #ffffff;
     --brand-secondary: #00d4ff;
     --brand-logo-url: none;
     /* Tema Shadcn (HSL sem hsl()): navy = texto; cyan = CTAs; cinzas = apoio */
