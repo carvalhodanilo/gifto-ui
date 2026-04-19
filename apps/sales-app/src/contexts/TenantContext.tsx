@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { resolveTenantLogoUrl } from '@core-ui/ui';
 import {
   getMockTenantConfig,
   DEFAULT_TENANT_PRIMARY_COLOR,
@@ -94,7 +95,7 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
         return {
           ...prev,
           name: patch.name,
-          logoUrl: patch.logoUrl,
+          logoUrl: resolveTenantLogoUrl(patch.logoUrl),
           primaryColor: primary,
           secondaryColor: secondary,
         };

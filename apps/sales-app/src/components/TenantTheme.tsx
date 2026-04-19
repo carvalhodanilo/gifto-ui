@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { OFFICIAL_BRAND_PALETTE } from '@core-ui/ui';
+import { OFFICIAL_BRAND_PALETTE, resolveTenantLogoUrl } from '@core-ui/ui';
 import type { Tenant } from '../types/tenant';
 
 interface TenantThemeProps {
@@ -14,22 +14,19 @@ interface TenantThemeProps {
  *   --brand-primary            (cor principal)
  *   --brand-primary-foreground (texto sobre botões/header com marca)
  *   --brand-secondary          (cor secundária)
- *   --brand-logo-url           (imagem do logo, se houver)
- * Fonte dos dados: mock/API; defaults em `@core-ui/ui` (`OFFICIAL_BRAND_PALETTE`).
+ *   --brand-logo-url           (imagem do logo; fallback global se a API não enviar)
+ * Fonte dos dados: mock/API; defaults em `@core-ui/ui` (`OFFICIAL_BRAND_PALETTE`, `resolveTenantLogoUrl`).
  */
 export function TenantTheme({ tenant, children }: TenantThemeProps) {
   React.useEffect(() => {
     const root = document.documentElement;
+    const logoUrl = resolveTenantLogoUrl(tenant.logoUrl);
     root.style.setProperty('--brand-primary', tenant.primaryColor);
     root.style.setProperty('--brand-primary-foreground', OFFICIAL_BRAND_PALETTE.onBrandPrimary);
     if (tenant.secondaryColor) {
       root.style.setProperty('--brand-secondary', tenant.secondaryColor);
     }
-    if (tenant.logoUrl) {
-      root.style.setProperty('--brand-logo-url', `url(${tenant.logoUrl})`);
-    } else {
-      root.style.removeProperty('--brand-logo-url');
-    }
+    root.style.setProperty('--brand-logo-url', `url(${logoUrl})`);
     return () => {
       root.style.removeProperty('--brand-primary');
       root.style.removeProperty('--brand-primary-foreground');

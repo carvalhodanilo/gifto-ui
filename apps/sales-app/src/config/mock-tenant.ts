@@ -1,5 +1,6 @@
 import type { Tenant } from '../types/tenant';
 import {
+  DEFAULT_TENANT_LOGO_URL,
   DEFAULT_TENANT_PRIMARY_COLOR,
   DEFAULT_TENANT_SECONDARY_COLOR,
   OFFICIAL_BRAND_PALETTE,
@@ -7,6 +8,7 @@ import {
 
 /** Reexport: imports existentes continuam a usar `config/mock-tenant`. */
 export {
+  DEFAULT_TENANT_LOGO_URL,
   DEFAULT_TENANT_PRIMARY_COLOR,
   DEFAULT_TENANT_SECONDARY_COLOR,
   OFFICIAL_BRAND_PALETTE,
@@ -41,8 +43,7 @@ export const MOCK_TENANT: Tenant = {
   tenantId: 'mock-shopping-1',
   name: 'Iguatemi Gift Shop',
   slug: 'iguatemishopping',
-  /** Ficheiro estático em `public/header.jpg` (Vite → URL `/header.jpg`). */
-  logoUrl: '/header.jpg',
+  logoUrl: DEFAULT_TENANT_LOGO_URL,
   primaryColor: DEFAULT_TENANT_PRIMARY_COLOR,
   secondaryColor: DEFAULT_TENANT_SECONDARY_COLOR,
   active: true,

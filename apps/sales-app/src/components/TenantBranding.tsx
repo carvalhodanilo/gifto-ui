@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { ShoppingBag } from 'lucide-react';
+import { resolveTenantLogoUrl } from '@core-ui/ui';
 import type { Tenant } from '../types/tenant';
 
 interface TenantBrandingProps {
@@ -69,19 +70,13 @@ export function TenantBranding({
     );
   }
 
-  const logoBlock = tenant.logoUrl ? (
+  const logoSrc = resolveTenantLogoUrl(tenant.logoUrl);
+  const logoBlock = (
     <img
-      src={tenant.logoUrl}
+      src={logoSrc}
       alt={tenant.name}
       className={`${isSm ? 'h-9' : 'h-14'} w-auto max-w-[200px] object-contain`}
     />
-  ) : (
-    <div
-      className={`flex ${logoSize} shrink-0 items-center justify-center rounded-lg`}
-      style={{ backgroundColor: 'var(--brand-primary)' }}
-    >
-      <ShoppingBag className={`${iconSize} text-white`} />
-    </div>
   );
 
   return (

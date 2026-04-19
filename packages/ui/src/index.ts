@@ -2,6 +2,8 @@ export {
   OFFICIAL_BRAND_PALETTE,
   DEFAULT_TENANT_PRIMARY_COLOR,
   DEFAULT_TENANT_SECONDARY_COLOR,
+  DEFAULT_TENANT_LOGO_URL,
+  resolveTenantLogoUrl,
 } from './theme/official-brand-palette';
 export type { OfficialBrandPaletteKey } from './theme/official-brand-palette';
 export { cn } from './lib/utils';
